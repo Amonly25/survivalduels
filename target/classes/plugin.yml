@@ -1,0 +1,10 @@
+main: com.ar.askgaming.survivalduels.SurvivalDuels.java
+name: SurvivalDuels
+version: 1.0
+author: AskGaming
+description: Survival Duels plugin for AskGaming
+commands:
+  duels:
+    description: Start a duel
+    permission: survivalduels.duels
+    alliases: [duel]
