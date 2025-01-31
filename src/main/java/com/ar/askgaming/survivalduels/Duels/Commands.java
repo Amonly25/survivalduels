@@ -1,4 +1,4 @@
-package com.ar.askgaming.survivalduels;
+package com.ar.askgaming.survivalduels.Duels;
 
 import java.util.List;
 
@@ -7,13 +7,16 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
 
-import com.ar.askgaming.survivalduels.Queue.QueueType;
+import com.ar.askgaming.survivalduels.SurvivalDuels;
+import com.ar.askgaming.survivalduels.Duels.Queue.QueueType;
 
 public class Commands implements TabExecutor {
 
     private SurvivalDuels plugin;
     public Commands(SurvivalDuels plugin) {
         this.plugin = plugin;
+
+        plugin.getServer().getPluginCommand("duels").setExecutor(this);
     }
 
     @Override
@@ -77,8 +80,8 @@ public class Commands implements TabExecutor {
 
         for (Queue queue : plugin.getDuelmanager().getQueues()) {
             if (queue.getType() == type) {
-                queue.addPlayer(p);
                 p.sendMessage("You have been added to the " + type.toString().toLowerCase() + " queue");
+                queue.addPlayer(p);
                 return;
             }
         }

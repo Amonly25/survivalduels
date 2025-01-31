@@ -5,8 +5,8 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerMoveEvent;
 
-import com.ar.askgaming.survivalduels.Duel;
 import com.ar.askgaming.survivalduels.SurvivalDuels;
+import com.ar.askgaming.survivalduels.Duels.Duel;
 
 public class PlayerMoveListener implements Listener{
 

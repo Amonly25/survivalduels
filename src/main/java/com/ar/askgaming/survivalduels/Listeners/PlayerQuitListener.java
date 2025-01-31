@@ -5,10 +5,10 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerQuitEvent;
 
-import com.ar.askgaming.survivalduels.Duel;
-import com.ar.askgaming.survivalduels.DuelManager;
-import com.ar.askgaming.survivalduels.Queue;
 import com.ar.askgaming.survivalduels.SurvivalDuels;
+import com.ar.askgaming.survivalduels.Duels.Duel;
+import com.ar.askgaming.survivalduels.Duels.DuelManager;
+import com.ar.askgaming.survivalduels.Duels.Queue;
 
 public class PlayerQuitListener implements Listener{
 
@@ -32,9 +32,7 @@ public class PlayerQuitListener implements Listener{
         if (duel == null) {
             return;
         }
-        
+        duel.chechOnPlayerQuit(p);
         
     }
-
-
 }

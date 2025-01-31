@@ -1,4 +1,4 @@
-package com.ar.askgaming.survivalduels;
+package com.ar.askgaming.survivalduels.Duels;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,6 +25,13 @@ public class Team {
     }
     public Team(List<Player> players) {
         this.players = players;
+    }
+    public String getName() {
+        String split = "";
+        for (Player player : players) {
+            split += player.getName() + ", ";
+        }
+        return split.substring(0, split.length() - 2);
     }
        
 

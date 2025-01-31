@@ -1,10 +1,12 @@
-package com.ar.askgaming.survivalduels;
+package com.ar.askgaming.survivalduels.Duels;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 import org.bukkit.entity.Player;
+
+import com.ar.askgaming.survivalduels.SurvivalDuels;
 
 public class Queue {
 

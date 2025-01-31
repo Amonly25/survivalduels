@@ -1,15 +1,24 @@
-package com.ar.askgaming.survivalduels;
+package com.ar.askgaming.survivalduels.Duels;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
+import org.bukkit.Location;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
+
+import com.ar.askgaming.survivalduels.SurvivalDuels;
+import com.ar.askgaming.survivalduels.Arenas.Arena;
+import com.ar.askgaming.survivalduels.Kits.Kit;
 
 public class DuelManager {
     
     private SurvivalDuels plugin;
     public DuelManager(SurvivalDuels plugin) {
         this.plugin = plugin;
+
+        new Commands(plugin);
 
         Queue solo = new Queue(Queue.QueueType.SOLO);
         Queue duo = new Queue(Queue.QueueType.DUO);
@@ -26,6 +35,21 @@ public class DuelManager {
     private List<Duel> duels = new ArrayList<>();
     private List<Team> teams = new ArrayList<>();
 
+    private HashMap<Player, Location> lastLocation = new HashMap<>();
+    private HashMap<Player, ItemStack[]> lastInventory = new HashMap<>();
+
+    public HashMap<Player, ItemStack[]> getLastInventory() {
+        return lastInventory;
+    }
+    public void setLastInventory(HashMap<Player, ItemStack[]> lastInventory) {
+        this.lastInventory = lastInventory;
+    }
+    public HashMap<Player, Location> getLastLocation() {
+        return lastLocation;
+    }
+    public void setLastLocation(HashMap<Player, Location> lastLocation) {
+        this.lastLocation = lastLocation;
+    }
     public void createDuel(Queue queue) {
 
         List<Player> players = queue.getPlayers();
@@ -76,10 +100,13 @@ public class DuelManager {
         arena.setInUse(true);
         for (Player player : players) {
             player.sendMessage("Duelo creado, teletransportando...");
+            lastLocation.put(player, player.getLocation());
+            lastInventory.put(player, player.getInventory().getContents());
         }
         queue.getPlayers().clear();
 
-        Duel duel = new Duel(t1, t2, arena);
+        Kit kit = plugin.getKitmanager().getRandomKit();
+        Duel duel = new Duel(t1, t2, arena, kit);
         duels.add(duel);
 
     }

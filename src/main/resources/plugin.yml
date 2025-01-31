@@ -1,10 +1,19 @@
-main: com.ar.askgaming.survivalduels.SurvivalDuels.java
+main: com.ar.askgaming.survivalduels.SurvivalDuels
 name: SurvivalDuels
 version: 1.0
 author: AskGaming
+api-version: 1.21
 description: Survival Duels plugin for AskGaming
 commands:
   duels:
     description: Start a duel
     permission: survivalduels.duels
-    alliases: [duel]
+    aliases: [duel]
+  arenas:
+    description: Manage arenas
+    permission: survivalduels.arenas
+    aliases: [arena] 
+  ckit:
+    description: Give a player a kit
+    permission: survivalduels.kit
+    aliases: [ckit]
