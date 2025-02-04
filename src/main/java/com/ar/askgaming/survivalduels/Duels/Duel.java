@@ -40,13 +40,13 @@ public class Duel {
         Bukkit.broadcastMessage("El duelo entre " + team1.getName() + " y " + team2.getName() + " comenzará en " + countdown + " segundos.");
         sendMessageToTeams("El duelo se llevará a cabo en la arena " + arena.getName() + ", usando el kit " + kit.getName() + ".");
 
-        teleportTeams(team1.getPlayers(), arena.getSpawnsTeam1());
-        teleportTeams(team2.getPlayers(), arena.getSpawnsTeam2());
+        teleportTeams(team1.getDuelPlayers(), arena.getSpawnsTeam1());
+        teleportTeams(team2.getDuelPlayers(), arena.getSpawnsTeam2());
 
         plugin.getDuelLogger().log("Duel between " + team1.getName() + " and " + team2.getName() + " started. Arena: " + arena.getName() + ", Kit: " + kit.getName());
 
-        setKit(team1.getPlayers(), kit);
-        setKit(team2.getPlayers(), kit);
+        setKit(team1.getDuelPlayers(), kit);
+        setKit(team2.getDuelPlayers(), kit);
 
         Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
             @Override
@@ -65,8 +65,8 @@ public class Duel {
         }
     }
     private void sendMessageToTeams(String message) {
-        sendMessageToPlayers(team1.getPlayers(), message);
-        sendMessageToPlayers(team2.getPlayers(), message);
+        sendMessageToPlayers(team1.getDuelPlayers(), message);
+        sendMessageToPlayers(team2.getDuelPlayers(), message);
     }
     private void sendMessageToPlayers(List<Player> list, String message) {
         for (Player player : list) {
@@ -101,27 +101,27 @@ public class Duel {
     }
     public void checkOnPlayerDeath(Player player) {
         spectators.add(player);
-        team1.getPlayers().remove(player);
-        team2.getPlayers().remove(player);
+        team1.getAlivePlayers().remove(player);
+        team2.getAlivePlayers().remove(player);
 
-        if (team1.getPlayers().isEmpty()) {
-            endDuel(team2);
-        } else if (team2.getPlayers().isEmpty()) {
-            endDuel(team1);
+        if (team1.getAlivePlayers().isEmpty()) {
+            endDuel(team2, team1);
+        } else if (team2.getAlivePlayers().isEmpty()) {
+            endDuel(team1, team2);
         }
     }
-    public void endDuel(Team winner) {
+    public void endDuel(Team winner, Team losser) {
         state = DuelState.END;
         arena.setInUse(false);
         plugin.getDuelmanager().getTeams().remove(winner);
     
-        List<Player> allPlayers = new ArrayList<>(winner.getPlayers());
+        List<Player> allPlayers = new ArrayList<>(winner.getDuelPlayers());
         allPlayers.addAll(spectators);
         resetPlayers(allPlayers);
 
-        Bukkit.broadcastMessage("El duelo ha terminado, el equipo " + winner.getName() + " ha ganado.");
+        Bukkit.broadcastMessage("El duelo ha terminado, el equipo " + winner.getName() + " ha ganado el duelo contra " + losser.getName() + ".");
         plugin.getDuelLogger().log("Duel between " + team1.getName() + " and " + team2.getName() + " ended. Winner: " + winner.getName());
-
+        plugin.getDuelmanager().modifyStats(winner, losser);
         plugin.getDuelmanager().getDuels().remove(this);
     }
     
@@ -156,8 +156,8 @@ public class Duel {
     
     public void rollBackPlayers() {
         List<Player> allPlayers = new ArrayList<>();
-        allPlayers.addAll(team1.getPlayers());
-        allPlayers.addAll(team2.getPlayers());
+        allPlayers.addAll(team1.getDuelPlayers());
+        allPlayers.addAll(team2.getDuelPlayers());
         allPlayers.addAll(spectators);
     
         resetPlayers(allPlayers);

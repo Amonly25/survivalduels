@@ -5,7 +5,10 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.OfflinePlayer;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
@@ -95,11 +98,11 @@ public class DuelManager {
     private void createDuel(Team team1, Team team2) {
         Arena arena = plugin.getArenamanager().getArenaAvailable(2);
         if (arena == null) {
-            for (Player player : team1.getPlayers()) {
+            for (Player player : team1.getDuelPlayers()) {
                 player.sendMessage("No hay arenas disponibles, cancelando duelo...");
            
             }
-            for (Player player : team2.getPlayers()) {
+            for (Player player : team2.getDuelPlayers()) {
                 player.sendMessage("No hay arenas disponibles, cancelando duelo...");
             }
             return;
@@ -108,12 +111,12 @@ public class DuelManager {
         teams.add(team2);
 
         arena.setInUse(true);
-        for (Player player : team1.getPlayers()) {
+        for (Player player : team1.getDuelPlayers()) {
             lastLocation.put(player, player.getLocation());
             lastInventory.put(player, player.getInventory().getContents());
             player.sendMessage("Duelo creado, teletransportando...");
         }
-        for (Player player : team2.getPlayers()) {
+        for (Player player : team2.getDuelPlayers()) {
             lastLocation.put(player, player.getLocation());
             lastInventory.put(player, player.getInventory().getContents());
             player.sendMessage("Duelo creado, teletransportando...");
@@ -125,7 +128,7 @@ public class DuelManager {
 
     public Duel isInDuel(Player player) {
         for (Duel duel : duels) {
-            if (duel.getTeam1().getPlayers().contains(player) || duel.getTeam2().getPlayers().contains(player)) {
+            if (duel.getTeam1().getDuelPlayers().contains(player) || duel.getTeam2().getDuelPlayers().contains(player)) {
                 return duel;
             }
         }
@@ -133,7 +136,7 @@ public class DuelManager {
     }
     public Duel getDuel(Player player) {
         for (Duel duel : duels) {
-            if (duel.getTeam1().getPlayers().contains(player) || duel.getTeam2().getPlayers().contains(player)) {
+            if (duel.getTeam1().getDuelPlayers().contains(player) || duel.getTeam2().getDuelPlayers().contains(player)) {
                 return duel;
             }
         }
@@ -141,7 +144,7 @@ public class DuelManager {
     }
     public Team isInTeam(Player player) {
         for (Team team : teams) {
-            if (team.getPlayers().contains(player)) {
+            if (team.getDuelPlayers().contains(player)) {
                 return team;
             }
         }
@@ -189,8 +192,6 @@ public class DuelManager {
             plugin.getDuelLogger().log("Error while teleporting player " + p.getName() + " back to spawn, inventory contents: " + lastInventory.get(p).toString());
             e.printStackTrace();
         }
-        
-
     }
 
     private HashMap<Player, Player> requests = new HashMap<>();
@@ -220,5 +221,65 @@ public class DuelManager {
                 target.sendMessage("Duel request from " + p.getName() + " has expired");
             }
         }, 20 * 60);
+    }
+    public void modifyStats(Team winner, Team losser) {
+        int minSize = Math.min(winner.getDuelPlayers().size(), losser.getDuelPlayers().size());
+    
+        for (int i = 0; i < minSize; i++) {
+            adjustElo(winner.getDuelPlayers().get(i), losser.getDuelPlayers().get(i));
+        }
+    
+        for (Player player : winner.getDuelPlayers()) {
+            addWin(player);
+        }
+        for (Player player : losser.getDuelPlayers()) {
+            addLoss(player);
+        }
+    
+        // Guardar solo una vez al final
+        plugin.getPlayerData().save();
+    }
+    
+    private void addWin(OfflinePlayer player) {
+        FileConfiguration config = plugin.getPlayerData().getConfig();
+        String path = player.getUniqueId().toString() + ".wins";
+        config.set(path, config.getInt(path, 0) + 1);
+    }
+    
+    private void addLoss(OfflinePlayer player) {
+        FileConfiguration config = plugin.getPlayerData().getConfig();
+        String path = player.getUniqueId().toString() + ".losses";
+        config.set(path, config.getInt(path, 0) + 1);
+    }
+    
+    public void setElo(OfflinePlayer player, int newElo) {
+        plugin.getPlayerData().getConfig().set(player.getUniqueId().toString() + ".elo", newElo);
+    }
+    
+    public void adjustElo(OfflinePlayer winner, OfflinePlayer loser) {
+        FileConfiguration config = plugin.getPlayerData().getConfig();
+    
+        int winnerElo = config.getInt(winner.getUniqueId().toString() + ".elo", 1000);
+        int loserElo = config.getInt(loser.getUniqueId().toString() + ".elo", 1000);
+        int k = 32; // Factor de ajuste
+    
+        double expectedWinner = 1 / (1 + Math.pow(10, (loserElo - winnerElo) / 400.0));
+        double expectedLoser = 1 / (1 + Math.pow(10, (winnerElo - loserElo) / 400.0));
+    
+        int newWinnerElo = (int) (winnerElo + k * (1 - expectedWinner));
+        int newLoserElo = (int) (loserElo + k * (0 - expectedLoser));
+    
+        setElo(winner, newWinnerElo);
+        setElo(loser, newLoserElo);
+    
+        Player winnerOnline = winner.getPlayer();
+        Player loserOnline = loser.getPlayer();
+    
+        if (winnerOnline != null) {
+            winnerOnline.sendMessage(ChatColor.GREEN + "¡Ganaste el duelo! Tu nuevo ELO es: " + newWinnerElo);
+        }
+        if (loserOnline != null) {
+            loserOnline.sendMessage(ChatColor.RED + "¡Perdiste el duelo! Tu nuevo ELO es: " + newLoserElo);
+        }
     }
 }

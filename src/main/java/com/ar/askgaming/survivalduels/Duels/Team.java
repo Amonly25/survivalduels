@@ -8,24 +8,25 @@ import org.bukkit.entity.Player;
 
 public class Team {
 
-    List<Player> players = new ArrayList<>();
+    private List<Player> duelPlayers = new ArrayList<>();
+    private List<Player> alivePlayers = new ArrayList<>();
 
-    public List<Player> getPlayers() {
-        return players;
+
+    public List<Player> getDuelPlayers() {
+        return duelPlayers;
     }
-
-    public void addPlayer(Player player) {
-        players.add(player);
-    }
-
-    public void removePlayer(Player player) {
-        players.remove(player);
+    public List<Player> getAlivePlayers() {
+        return alivePlayers;
     }
     public Team(Player player) {
-        addPlayer(player);
+        duelPlayers.add(player);
+        alivePlayers.add(player);
+
+        setName();
     }
     public Team(List<Player> players) {
-        this.players = players;
+        duelPlayers.addAll(players);
+        alivePlayers.addAll(players);
 
         setName();
     }
@@ -35,9 +36,10 @@ public class Team {
         return name;
     }
 
+
     private void setName() {
         String split = "";
-        for (OfflinePlayer player : players) {
+        for (OfflinePlayer player : duelPlayers) {
             split += player.getName() + ", ";
         }
         name = split.substring(0, split.length() - 2);
