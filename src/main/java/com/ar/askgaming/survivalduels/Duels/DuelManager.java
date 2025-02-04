@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -85,31 +86,43 @@ public class DuelManager {
     
         Team t1 = new Team(team1);
         Team t2 = new Team(team2);
-        teams.add(t1);
-        teams.add(t2);
 
-        Arena arena = plugin.getArenamanager().getArenaAvailable(teamSize);
-        if (arena == null) {
-            for (Player player : players) {
-                player.sendMessage("No hay arenas disponibles, por favor espere...");
-            }
-            //Handle no arena available
-            //Prepare and wait for an arena to be available.
-            return;
-        }
-        arena.setInUse(true);
-        for (Player player : players) {
-            player.sendMessage("Duelo creado, teletransportando...");
-            lastLocation.put(player, player.getLocation());
-            lastInventory.put(player, player.getInventory().getContents());
-        }
+        createDuel(t1, t2);
+
         queue.getPlayers().clear();
 
-        Kit kit = plugin.getKitmanager().getRandomKit();
-        Duel duel = new Duel(t1, t2, arena, kit);
-        duels.add(duel);
-
     }
+    private void createDuel(Team team1, Team team2) {
+        Arena arena = plugin.getArenamanager().getArenaAvailable(2);
+        if (arena == null) {
+            for (Player player : team1.getPlayers()) {
+                player.sendMessage("No hay arenas disponibles, cancelando duelo...");
+           
+            }
+            for (Player player : team2.getPlayers()) {
+                player.sendMessage("No hay arenas disponibles, cancelando duelo...");
+            }
+            return;
+        }
+        teams.add(team1);
+        teams.add(team2);
+
+        arena.setInUse(true);
+        for (Player player : team1.getPlayers()) {
+            lastLocation.put(player, player.getLocation());
+            lastInventory.put(player, player.getInventory().getContents());
+            player.sendMessage("Duelo creado, teletransportando...");
+        }
+        for (Player player : team2.getPlayers()) {
+            lastLocation.put(player, player.getLocation());
+            lastInventory.put(player, player.getInventory().getContents());
+            player.sendMessage("Duelo creado, teletransportando...");
+        }
+        Kit kit = plugin.getKitmanager().getRandomKit();
+        Duel duel = new Duel(team1, team2, arena, kit);
+        duels.add(duel);
+    }
+
     public Duel isInDuel(Player player) {
         for (Duel duel : duels) {
             if (duel.getTeam1().getPlayers().contains(player) || duel.getTeam2().getPlayers().contains(player)) {
@@ -156,5 +169,56 @@ public class DuelManager {
     }
     public List<Team> getTeams() {
         return teams;
+    }
+    public void onShutdown() {
+        for (Player player : lastLocation.keySet()) {
+            checkRollBack(player);
+        }
+ 
+    }
+    public void checkRollBack(Player p) {
+        try {
+            if (lastLocation.containsKey(p)) {
+                p.teleport(lastLocation.get(p));
+                p.getInventory().setContents(lastInventory.get(p));
+                lastLocation.remove(p);
+                lastInventory.remove(p);
+                plugin.getDuelLogger().log("Player " + p.getName() + " teleported back to spawn and inventory restored.");
+            }
+        } catch (IllegalArgumentException e) {
+            plugin.getDuelLogger().log("Error while teleporting player " + p.getName() + " back to spawn, inventory contents: " + lastInventory.get(p).toString());
+            e.printStackTrace();
+        }
+        
+
+    }
+
+    private HashMap<Player, Player> requests = new HashMap<>();
+
+    public void requestDuel(Player p, Player target) {
+        if (requests.containsKey(p) && requests.get(p) == target) {
+            p.sendMessage("You have already sent a duel request to " + target.getName());
+            return;
+        }
+        if (requests.containsKey(target) && requests.get(target) == p) {
+            Team team1 = new Team(p);
+            Team team2 = new Team(target);
+            createDuel(team1, team2);
+            requests.remove(p);
+            requests.remove(target);
+            return;
+        }
+        requests.put(p, target);
+        p.sendMessage("Duel request sent to " + target.getName());
+        target.sendMessage(p.getName() + " has sent you a duel request. Type /duel " + p.getName() + " to accept");
+
+        Bukkit.getScheduler().runTaskLater(plugin, () -> {
+            if (requests.containsKey(p) && requests.get(p) == target) {
+                requests.remove(p);
+                requests.remove(target);
+                p.sendMessage("Duel request to " + target.getName() + " has expired");
+                target.sendMessage("Duel request from " + p.getName() + " has expired");
+            }
+        }, 20 * 60);
     }
 }

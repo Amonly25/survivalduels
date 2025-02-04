@@ -43,6 +43,7 @@ public class Duel {
         teleportTeams(team1.getPlayers(), arena.getSpawnsTeam1());
         teleportTeams(team2.getPlayers(), arena.getSpawnsTeam2());
 
+        plugin.getDuelLogger().log("Duel between " + team1.getName() + " and " + team2.getName() + " started. Arena: " + arena.getName() + ", Kit: " + kit.getName());
 
         setKit(team1.getPlayers(), kit);
         setKit(team2.getPlayers(), kit);
@@ -113,32 +114,53 @@ public class Duel {
         state = DuelState.END;
         arena.setInUse(false);
         plugin.getDuelmanager().getTeams().remove(winner);
-
+    
         List<Player> allPlayers = new ArrayList<>(winner.getPlayers());
         allPlayers.addAll(spectators);
-        Bukkit.broadcastMessage("El duelo ha terminado, el equipo " + winner.getName() + " ha ganado.");
+        resetPlayers(allPlayers);
 
-        allPlayers.forEach(player -> {
+        Bukkit.broadcastMessage("El duelo ha terminado, el equipo " + winner.getName() + " ha ganado.");
+        plugin.getDuelLogger().log("Duel between " + team1.getName() + " and " + team2.getName() + " ended. Winner: " + winner.getName());
+
+        plugin.getDuelmanager().getDuels().remove(this);
+    }
     
+    private void teleportBack(Player player) {
+        World world = Bukkit.getWorld("world");
+        Location location = world.getSpawnLocation();
+
+        try {
+            player.teleport(plugin.getDuelmanager().getLastLocation().getOrDefault(player, location));
+            player.getInventory().setContents(plugin.getDuelmanager().getLastInventory().get(player));
+            plugin.getDuelLogger().log("Player " + player.getName() + " teleported back to spawn and inventory restored.");
+            plugin.getDuelmanager().getLastLocation().remove(player);
+            plugin.getDuelmanager().getLastInventory().remove(player);
+        } catch (IllegalArgumentException e) {
+            plugin.getDuelLogger().log("Error while teleporting/restoring player back. " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+    
+    private void resetPlayers(List<Player> players) {
+        players.forEach(player -> {
             teleportBack(player);
             player.setGameMode(GameMode.SURVIVAL);
             player.getActivePotionEffects().clear();
         });
-
-        plugin.getDuelmanager().getDuels().remove(this);
-        
     }
-    private void teleportBack(Player player) {
-        World world = Bukkit.getWorld("world");
-        Location location = world.getSpawnLocation();
-        player.teleport(plugin.getDuelmanager().getLastLocation().getOrDefault(player, location));
-        player.getInventory().setContents(plugin.getDuelmanager().getLastInventory().get(player));
+    
+    public void checkOnPlayerQuit(Player p) {
+        plugin.getDuelLogger().log(p.getName() + " quit the duel.");
+        checkOnPlayerDeath(p);
     }
-
-    public void chechOnPlayerQuit(Player p) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'chechOnPlayerQuit'");
+    
+    public void rollBackPlayers() {
+        List<Player> allPlayers = new ArrayList<>();
+        allPlayers.addAll(team1.getPlayers());
+        allPlayers.addAll(team2.getPlayers());
+        allPlayers.addAll(spectators);
+    
+        resetPlayers(allPlayers);
     }
-
-
+  
 }

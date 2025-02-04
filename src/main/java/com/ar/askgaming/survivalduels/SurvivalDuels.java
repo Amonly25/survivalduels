@@ -8,15 +8,18 @@ import com.ar.askgaming.survivalduels.Arenas.ArenaManager;
 import com.ar.askgaming.survivalduels.Duels.DuelManager;
 import com.ar.askgaming.survivalduels.Kits.Kit;
 import com.ar.askgaming.survivalduels.Kits.KitManager;
-import com.ar.askgaming.survivalduels.Listeners.EntityDamageByEntityListener;
+import com.ar.askgaming.survivalduels.Listeners.EntityDamageListener;
+import com.ar.askgaming.survivalduels.Listeners.PlayerJoinListener;
 import com.ar.askgaming.survivalduels.Listeners.PlayerMoveListener;
 import com.ar.askgaming.survivalduels.Listeners.PlayerQuitListener;
+import com.ar.askgaming.survivalduels.Utils.DuelLogger;
 
 public class SurvivalDuels extends JavaPlugin {
 
     private DuelManager duelmanager;
     private ArenaManager arenamanager;
     private KitManager kitmanager;
+    private DuelLogger logger;
 
     public void onEnable() {
         
@@ -28,15 +31,20 @@ public class SurvivalDuels extends JavaPlugin {
         duelmanager = new DuelManager(this);
         arenamanager = new ArenaManager(this);
         kitmanager = new KitManager(this);
+        logger = new DuelLogger(this);
                 
-        getServer().getPluginManager().registerEvents(new EntityDamageByEntityListener(this), this);
+        getServer().getPluginManager().registerEvents(new EntityDamageListener(this), this);
         getServer().getPluginManager().registerEvents(new PlayerQuitListener(this), this);
         getServer().getPluginManager().registerEvents(new PlayerMoveListener(this), this);
 
+        new PlayerJoinListener(this);
     }
 
     public void onDisable() {
-        
+        getDuelmanager().onShutdown();
+    }
+    public DuelLogger getDuelLogger() {
+        return logger;
     }
 
     public DuelManager getDuelmanager() {

@@ -32,7 +32,7 @@ public class PlayerQuitListener implements Listener{
         if (duel == null) {
             return;
         }
-        duel.chechOnPlayerQuit(p);
+        duel.checkOnPlayerQuit(p);
         
     }
 }
