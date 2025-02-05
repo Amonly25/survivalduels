@@ -9,6 +9,7 @@ import com.ar.askgaming.survivalduels.Duels.DuelManager;
 import com.ar.askgaming.survivalduels.Kits.Kit;
 import com.ar.askgaming.survivalduels.Kits.KitManager;
 import com.ar.askgaming.survivalduels.Listeners.EntityDamageListener;
+import com.ar.askgaming.survivalduels.Listeners.PlayerInteractListener;
 import com.ar.askgaming.survivalduels.Listeners.PlayerJoinListener;
 import com.ar.askgaming.survivalduels.Listeners.PlayerMoveListener;
 import com.ar.askgaming.survivalduels.Listeners.PlayerQuitListener;
@@ -46,6 +47,7 @@ public class SurvivalDuels extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new PlayerMoveListener(this), this);
 
         new PlayerJoinListener(this);
+        new PlayerInteractListener(this);
 
         if (getServer().getPluginManager().getPlugin("PlaceholderAPI") != null) {
             new PlaceHolders(this).register();
