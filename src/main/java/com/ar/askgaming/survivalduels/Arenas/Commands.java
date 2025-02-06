@@ -64,7 +64,7 @@ public class Commands implements TabExecutor {
                 setArena(player, args);
                 return true;
             default:
-                player.sendMessage("Comando no encontrado");
+                player.sendMessage("Command not found");
                 return true;
         }
 
@@ -72,47 +72,47 @@ public class Commands implements TabExecutor {
 
     private void createArena(Player p, String[] args) {
         if (args.length < 2) {
-            p.sendMessage("Uso: /arenas create <nombre>");
+            p.sendMessage("Use: /arenas create <name>");
             return;
         }
         String name = args[1];
         Arena arena = plugin.getArenamanager().getByName(name);
         if (arena != null) {
-            p.sendMessage("La arena ya existe");
+            p.sendMessage("The arene with that name already exists");
             return;
         }
-        p.sendMessage("Arena creada correctamente, usa /arena set <arena> para configurarla");
+        p.sendMessage("Arena created successfully, you can now configure it with /arenas set <arena> <maxPlayers|loc1|loc2>");
         plugin.getArenamanager().createArena(name);
     }
     private void deleteArena(Player player, String[] args) {
         if (args.length < 2) {
-            player.sendMessage("Uso: /arenas delete <nombre>");
+            player.sendMessage("Use: /arenas delete <name>");
             return;
         }
         String name = args[1];
         Arena arena = plugin.getArenamanager().getByName(name);
         if (arena == null) {
-            player.sendMessage("La arena no existe");
+            player.sendMessage("This arena does not exist");
             return;
         }
         plugin.getArenamanager().deleteArena(arena);
-        player.sendMessage("Arena eliminada correctamente");
+        player.sendMessage("Arena deleted successfully");
     }
     private void listArenas(Player player) {
-        player.sendMessage("Arenas disponibles:");
+        player.sendMessage("Arenas:");
         for (Arena arena : plugin.getArenamanager().getArenas()) {
             player.sendMessage(arena.getName());
         }
     }
     private void setArena(Player player, String[] args) {
         if (args.length < 3) {
-            player.sendMessage("Uso: /arenas set <arena> <maxPlayers>");
+            player.sendMessage("Use: /arenas set <arena> <maxPlayers>");
             return;
         }
         String name = args[1];
         Arena arena = plugin.getArenamanager().getByName(name);
         if (arena == null) {
-            player.sendMessage("La arena no existe");
+            player.sendMessage("This arena does not exist");
             return;
         }
         Location loc = player.getLocation();
@@ -123,21 +123,21 @@ public class Commands implements TabExecutor {
                     maxPlayers = Integer.parseInt(args[3]);
 
                 } catch (Exception e) {
-                    player.sendMessage("El numero de jugadores debe ser un numero");
+                    player.sendMessage("Invalid number");
                     return;
                 }
                 arena.setMaxPlayers(maxPlayers);
-                player.sendMessage("MaxPlayers configurado correctamente a " + maxPlayers);
+                player.sendMessage("Max players configured correctly to " + maxPlayers);
                 plugin.getArenamanager().save();
                 break;
             case "loc1":
                 arena.setSpawnsTeam1(loc);
-                player.sendMessage("Spawn 1 configurado correctamente");
+                player.sendMessage("Spawn 1 configured correctly");
                 plugin.getArenamanager().save();
                 break;
             case "loc2":
                 arena.setSpawnsTeam2(loc);
-                player.sendMessage("Spawn 2 configurado correctamente");
+                player.sendMessage("Spawn 2 configured correctly");
                 plugin.getArenamanager().save();
                 break;
             default:

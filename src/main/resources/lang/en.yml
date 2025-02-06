@@ -1,0 +1,28 @@
+queue:
+  enter: "&6You have entered the {queue} queue for a duel!"
+  leave: "&6You have left the queue for a duel!"
+  already_in: "&cYou are already in a queue!"
+  Invalid: "&cInvalid queue!"
+  in_queue: "&cThis player are already in a queue!"
+  found: "&6You have found a match! Creating duel..."
+
+duel:
+  in_duel: "&cYou are already in a duel!"
+  player_in_duel: "&cThis player are already in a duel!" 
+  created: "&6Duel created between &3{team1} &7and &c{team2}!"
+  ended: "&a{winner} &7has won the duel against &4{loser}!"
+  prepare: "&6The duel will start in {time} seconds, using the kit {kit} on the arena {arena}!"
+  error_tp: "&cError while teleporting to the arena, someone doesnt have tp permission, the duel has been cancelled."
+  already_send: "&cYou have already sent a duel request to this player!"
+  request: "&6You have sent a duel request to {player}!"
+  received: "&6{player} has sended a duel request to you, use /duel {player} to accept."
+  expired: "&6The duel request from/to {player} has expired"
+  win: "&7You have &awon &7the duel, your new elo is &6{elo}!"
+  lose: "&7You have &clost &7the duel, your new elo is &6{elo}!"
+
+commands:
+  player_not_found: "&cPlayer not found!"
+  cant_duel_yourself: "&cYou can't duel yourself!"
+
+arena:
+  not_found: "&cNo arena found, cancelling duel!"

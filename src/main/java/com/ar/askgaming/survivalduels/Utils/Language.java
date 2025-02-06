@@ -2,6 +2,7 @@ package com.ar.askgaming.survivalduels.Utils;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
 
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.InvalidConfigurationException;
@@ -13,82 +14,65 @@ import com.ar.askgaming.survivalduels.SurvivalDuels;
 
 public class Language {
 
-    private SurvivalDuels plugin;
+    private final SurvivalDuels plugin;
+    private final String prefix;
+    private final HashMap<String, HashMap<String, String>> cache = new HashMap<>();
 
     public Language(SurvivalDuels plugin) {
         this.plugin = plugin;
 
-        // Save default lang file from resources if it doesn't exist
-        File defaultLangFile = new File(plugin.getDataFolder() + "/lang/en.yml");
-        if (!defaultLangFile.exists()) {
-            plugin.saveResource("lang/en.yml", false);
-            
-        }
-        File esLangFile = new File(plugin.getDataFolder() + "/lang/es.yml");
-        if (!esLangFile.exists()) {
-            plugin.saveResource("lang/es.yml", false);
-        }
-        prefix = plugin.getConfig().getString("prefix","§7[§6&lDuels§7] ");
+        // Guardar los archivos de idioma si no existen
+        saveDefaultLang("en.yml");
+        saveDefaultLang("es.yml");
+
+        // Cargar prefijo
+        this.prefix = plugin.getConfig().getString("prefix", "§7[§6&lDuels§7] ");
     }
 
-    private String prefix;
+    private void saveDefaultLang(String fileName) {
+        File langFile = new File(plugin.getDataFolder() + "/lang/" + fileName);
+        if (!langFile.exists()) {
+            plugin.saveResource("lang/" + fileName, false);
+        }
+    }
 
     public String getFrom(String path, Player p) {
-        String locale;
+        String locale = (p == null) ? "en" : p.getLocale().split("_")[0];
 
-        if (p == null) {
-            locale = "en";
-        } else {
-            locale = p.getLocale().split("_")[0];
-
-        }
-
+        // Si el idioma no existe, usar inglés como fallback inmediato
         File file = new File(plugin.getDataFolder() + "/lang/" + locale + ".yml");
-        String required = "";
-    
         if (!file.exists()) {
-            required = getDefaultLang(path);
-        } else {
-            FileConfiguration langFile = new YamlConfiguration();
-            try {
-                langFile.load(file);
-            } catch (IOException | InvalidConfigurationException e) {
-                e.printStackTrace();
-            }
-    
-            if (langFile.isList(path)) {
-                StringBuilder result = new StringBuilder();
-                for (String s : langFile.getStringList(path)) {
-                    result.append(s).append("\n");
-                }
-                required = result.toString().trim();
-            } else {
-                required = langFile.getString(path, getDefaultLang(path));
-            }
+            locale = "en";
+            file = new File(plugin.getDataFolder() + "/lang/en.yml");
         }
 
+        // Verificar caché
+        if (cache.containsKey(locale) && cache.get(locale).containsKey(path)) {
+            return ChatColor.translateAlternateColorCodes('&', prefix + cache.get(locale).get(path));
+        }
+
+        // Cargar mensaje desde archivo
+        String required = loadMessage(file, path);
+
+        // Guardar en caché
+        cache.computeIfAbsent(locale, k -> new HashMap<>()).put(path, required);
         return ChatColor.translateAlternateColorCodes('&', prefix + required);
     }
 
-    private String getDefaultLang(String path){
-
-        File file = new File(plugin.getDataFolder() + "/lang/en.yml");
-        FileConfiguration lang = new YamlConfiguration();
-
+    private String loadMessage(File file, String path) {
+        FileConfiguration langFile = new YamlConfiguration();
         try {
-            lang.load(file);
+            langFile.load(file);
         } catch (IOException | InvalidConfigurationException e) {
+            plugin.getLogger().warning("Error loading lang file: " + file.getName());
             e.printStackTrace();
+            return "Error: Missing lang file";
         }
 
-        if (lang.isList(path)) {
-            StringBuilder result = new StringBuilder();
-            for (String s : lang.getStringList(path)) {
-                result.append(s).append("\n");
-            }
-            return result.toString().trim();
+        if (langFile.isList(path)) {
+            return String.join("\n", langFile.getStringList(path));
         }
 
-        return lang.getString(path,"Undefined key: " + path);
+        return langFile.getString(path, "Error: Invalid lang path: " + path); // Devolver null si no existe
     }
 }
