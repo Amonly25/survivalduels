@@ -15,17 +15,18 @@ public class Commands implements TabExecutor{
     public Commands(SurvivalDuels plugin) {
         this.plugin = plugin;
 
-        plugin.getServer().getPluginCommand("ckit").setExecutor(this);
+        plugin.getServer().getPluginCommand("dkit").setExecutor(this);
     }
 
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
         if (args.length == 1) {
-            return List.of("create", "delete", "list", "set");
+            return List.of("create", "delete", "list", "set", "get");
         }
         if (args.length == 2) {
             switch (args[0].toLowerCase()) {
                 case "delete":
+                case "get":
                 case "set":
                     return plugin.getKitmanager().getKits().stream().map(Kit::getName).toList();
                 default:
@@ -56,7 +57,10 @@ public class Commands implements TabExecutor{
                 break;
             case "set":
                 setKit(p, args);
-                break;        
+                break;       
+            case "get":
+                getKit(p, args);
+                break;
             default:
                 sender.sendMessage("Use kit <create/delete/list/set>");
                 break;
@@ -88,6 +92,7 @@ public class Commands implements TabExecutor{
             return;
         }
         plugin.getKitmanager().deleteKit(kit);
+        p.sendMessage("Kit deleted");
     }
     private void listKits(Player p){
         p.sendMessage("Kits:");
@@ -98,6 +103,20 @@ public class Commands implements TabExecutor{
     private void setKit(Player p, String[] args){
         if (args.length < 2){
             p.sendMessage("Use /kit set <kit>");
+            return;
+        }
+        String name = args[1];
+        Kit kit = plugin.getKitmanager().getKit(name);
+        if (kit == null){
+            p.sendMessage("Kit not found");
+            return;
+        }
+
+        plugin.getKitmanager().setKit(p, kit);
+    }
+    private void getKit(Player p, String[] args){
+        if (args.length < 2){
+            p.sendMessage("Use /kit get <kit>");
             return;
         }
         String name = args[1];

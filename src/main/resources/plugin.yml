@@ -13,7 +13,7 @@ commands:
     description: Manage arenas
     permission: survivalduels.arenas
     aliases: [arena] 
-  ckit:
+  dkit:
     description: Give a player a kit
     permission: survivalduels.kit
     aliases: [ckit]

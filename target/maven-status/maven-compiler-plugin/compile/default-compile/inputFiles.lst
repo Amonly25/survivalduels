@@ -10,8 +10,12 @@ C:\Users\Luisito\Desktop\vs_code\survivalduels\src\main\java\com\ar\askgaming\su
 C:\Users\Luisito\Desktop\vs_code\survivalduels\src\main\java\com\ar\askgaming\survivalduels\Kits\Kit.java
 C:\Users\Luisito\Desktop\vs_code\survivalduels\src\main\java\com\ar\askgaming\survivalduels\Kits\KitManager.java
 C:\Users\Luisito\Desktop\vs_code\survivalduels\src\main\java\com\ar\askgaming\survivalduels\Listeners\EntityDamageListener.java
+C:\Users\Luisito\Desktop\vs_code\survivalduels\src\main\java\com\ar\askgaming\survivalduels\Listeners\PlayerInteractListener.java
 C:\Users\Luisito\Desktop\vs_code\survivalduels\src\main\java\com\ar\askgaming\survivalduels\Listeners\PlayerJoinListener.java
 C:\Users\Luisito\Desktop\vs_code\survivalduels\src\main\java\com\ar\askgaming\survivalduels\Listeners\PlayerMoveListener.java
 C:\Users\Luisito\Desktop\vs_code\survivalduels\src\main\java\com\ar\askgaming\survivalduels\Listeners\PlayerQuitListener.java
 C:\Users\Luisito\Desktop\vs_code\survivalduels\src\main\java\com\ar\askgaming\survivalduels\SurvivalDuels.java
 C:\Users\Luisito\Desktop\vs_code\survivalduels\src\main\java\com\ar\askgaming\survivalduels\Utils\DuelLogger.java
+C:\Users\Luisito\Desktop\vs_code\survivalduels\src\main\java\com\ar\askgaming\survivalduels\Utils\Language.java
+C:\Users\Luisito\Desktop\vs_code\survivalduels\src\main\java\com\ar\askgaming\survivalduels\Utils\PlaceHolders.java
+C:\Users\Luisito\Desktop\vs_code\survivalduels\src\main\java\com\ar\askgaming\survivalduels\Utils\PlayerData.java
