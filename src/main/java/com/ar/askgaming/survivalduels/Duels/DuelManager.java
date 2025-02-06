@@ -8,6 +8,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.Sound;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -15,13 +16,15 @@ import org.bukkit.inventory.ItemStack;
 import com.ar.askgaming.survivalduels.SurvivalDuels;
 import com.ar.askgaming.survivalduels.Arenas.Arena;
 import com.ar.askgaming.survivalduels.Kits.Kit;
+import com.ar.askgaming.survivalduels.Utils.Language;
 
 public class DuelManager {
     
     private SurvivalDuels plugin;
+    private Language lang;
     public DuelManager(SurvivalDuels plugin) {
         this.plugin = plugin;
-
+        this.lang = plugin.getLangManager();
         new Commands(plugin);
 
         Queue solo = new Queue(Queue.QueueType.SOLO);
@@ -61,7 +64,7 @@ public class DuelManager {
         List<Player> team2 = new ArrayList<>();
     
         for (Player player : players) {
-           player.sendMessage("Jugadores encontrados, creando duelo...");
+           player.sendMessage(lang.getFrom("queue.found", player));
         }
 
         int teamSize = 0;
@@ -99,11 +102,11 @@ public class DuelManager {
         Arena arena = plugin.getArenamanager().getArenaAvailable(2);
         if (arena == null) {
             for (Player player : team1.getDuelPlayers()) {
-                player.sendMessage("No hay arenas disponibles, cancelando duelo...");
+                player.sendMessage(lang.getFrom("arena.not_found", player));
            
             }
             for (Player player : team2.getDuelPlayers()) {
-                player.sendMessage("No hay arenas disponibles, cancelando duelo...");
+                player.sendMessage(lang.getFrom("arena.not_found", player));
             }
             return;
         }
@@ -114,12 +117,10 @@ public class DuelManager {
         for (Player player : team1.getDuelPlayers()) {
             lastLocation.put(player, player.getLocation());
             lastInventory.put(player, player.getInventory().getContents());
-            player.sendMessage("Duelo creado, teletransportando...");
         }
         for (Player player : team2.getDuelPlayers()) {
             lastLocation.put(player, player.getLocation());
             lastInventory.put(player, player.getInventory().getContents());
-            player.sendMessage("Duelo creado, teletransportando...");
         }
         Kit kit = plugin.getKitmanager().getRandomKit();
         Duel duel = new Duel(team1, team2, arena, kit);
@@ -198,7 +199,7 @@ public class DuelManager {
 
     public void requestDuel(Player p, Player target) {
         if (requests.containsKey(p) && requests.get(p) == target) {
-            p.sendMessage("You have already sent a duel request to " + target.getName());
+            p.sendMessage(lang.getFrom("duel.already_send", p));
             return;
         }
         if (requests.containsKey(target) && requests.get(target) == p) {
@@ -210,15 +211,15 @@ public class DuelManager {
             return;
         }
         requests.put(p, target);
-        p.sendMessage("Duel request sent to " + target.getName());
-        target.sendMessage(p.getName() + " has sent you a duel request. Type /duel " + p.getName() + " to accept");
+        p.sendMessage(lang.getFrom("duel.request", p).replace("{player}", target.getName()));
+        target.sendMessage(lang.getFrom("duel.receive", p).replace("{player}", p.getName()));
 
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
             if (requests.containsKey(p) && requests.get(p) == target) {
                 requests.remove(p);
                 requests.remove(target);
-                p.sendMessage("Duel request to " + target.getName() + " has expired");
-                target.sendMessage("Duel request from " + p.getName() + " has expired");
+                p.sendMessage(lang.getFrom("duel.expired", p).replace("{player}", target.getName()));
+                target.sendMessage(lang.getFrom("duel.expired", p).replace("{player}", p.getName()));
             }
         }, 20 * 60);
     }
@@ -276,10 +277,11 @@ public class DuelManager {
         Player loserOnline = loser.getPlayer();
     
         if (winnerOnline != null) {
-            winnerOnline.sendMessage(ChatColor.GREEN + "¡Ganaste el duelo! Tu nuevo ELO es: " + newWinnerElo);
+            winnerOnline.sendMessage(lang.getFrom("duel.won", loserOnline).replace("{elo}", newWinnerElo + ""));
+            winnerOnline.playSound(winnerOnline.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
         }
         if (loserOnline != null) {
-            loserOnline.sendMessage(ChatColor.RED + "¡Perdiste el duelo! Tu nuevo ELO es: " + newLoserElo);
+            loserOnline.sendMessage(lang.getFrom("duel.lose", winnerOnline).replace("{elo}", newLoserElo + ""));
         }
     }
 }

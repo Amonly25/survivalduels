@@ -12,42 +12,41 @@ import com.ar.askgaming.survivalduels.SurvivalDuels;
 
 public class ArenaManager {
 
-    File file;
+    File arenaFile;
     FileConfiguration config;
 
-    private SurvivalDuels plugin;
     public ArenaManager(SurvivalDuels plugin) {
-
-        this.plugin = plugin;
 
         new Commands(plugin);
 
-        file = new File(plugin.getDataFolder(), "arenas.yml");
+        arenaFile = new File(plugin.getDataFolder(), "arenas.yml");
 
-        if (!file.exists()) {
+        if (!arenaFile.exists()) {
             plugin.saveResource("arenas.yml", false);
         }
         config = new YamlConfiguration();
 
         try {
-            config.load(file);
+            config.load(arenaFile);
         } catch (Exception e) {
             e.printStackTrace();
         }
         Set<String> Keys = config.getKeys(false);
 
-        // Iterar sobre todas las keys y cargar cada Arena
+        // Iterate over all keys and load each Arena
         for (String key : Keys) {
             Object obj = config.get(key);
             if (obj instanceof Arena) {
                 Arena arena = (Arena) obj;
                 arenas.add(arena);
+            } else {
+                System.out.println("Warning: Key " + key + " does not correspond to an Arena instance.");
             }
         }
     }
     public void save() {
         try {
-            config.save(file);
+            config.save(arenaFile);
         } catch (Exception e) {
             e.printStackTrace();
         }

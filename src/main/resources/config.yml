@@ -1,1 +1,6 @@
 prefix: "§7[§6&lDuels§7] " #use "" for no prefix
+
+duels:
+  useOwnInventory:
+    enabled: false
+    keepInventory: false #only works if useOwnInventory is enabled

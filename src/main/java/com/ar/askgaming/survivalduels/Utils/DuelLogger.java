@@ -1,7 +1,9 @@
 package com.ar.askgaming.survivalduels.Utils;
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -9,32 +11,26 @@ import com.ar.askgaming.survivalduels.SurvivalDuels;
 
 public class DuelLogger {
 
-    private SurvivalDuels plugin;
+    private final SurvivalDuels plugin;
+    private final File file;
+    private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
+
     public DuelLogger(SurvivalDuels plugin) {
         this.plugin = plugin;
-
-        file = new File(plugin.getDataFolder(), "duels.log");
-
-        if (!file.exists()) {
-            try {
-                file.createNewFile();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
+        this.file = new File(plugin.getDataFolder(), "duels.log");
     }
-    File file;
-    
-    public void log(String message){
-        LocalDateTime now = LocalDateTime.now();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
-        String format = now.format(formatter);
-        try {
-            FileWriter writer = new FileWriter(file, true);
-            writer.write(format + " " + message + "\n");
-            writer.close();
-        } catch (Exception e) {
-            e.printStackTrace();
+
+    public void log(String message) {
+        String timestamp = LocalDateTime.now().format(formatter);
+        String logMessage = timestamp + " " + message;
+
+        synchronized (this) { // Evita problemas en entornos multihilo
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter(file, true))) {
+                writer.write(logMessage);
+                writer.newLine();
+            } catch (IOException e) {
+                plugin.getLogger().warning("Error al escribir en duels.log: " + e.getMessage());
+            }
         }
     }
 }
