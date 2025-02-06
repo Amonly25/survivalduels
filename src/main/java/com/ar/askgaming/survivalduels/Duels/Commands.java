@@ -53,7 +53,9 @@ public class Commands implements TabExecutor {
             case "queue":
                 queue(p, args);
                 break;
-            
+            case "leave":
+                leaveDuel(p,args);
+                break;
             default:
                 duelPlayer(p, args);
                 break;
@@ -122,12 +124,21 @@ public class Commands implements TabExecutor {
         
         if (plugin.getDuelmanager().isInDuel(p) != null) {
             p.sendMessage(lang.getFrom("duel.in_duel", p));
-            return true;
+            return false;
         }
         if (plugin.getDuelmanager().isInQueue(p) != null) {
             p.sendMessage(lang.getFrom("queue.already_in", p));
             return false;
         }
-        return false;
+        return true;
+    }
+    //#region endDuel
+    public void leaveDuel(Player p, String[] args){
+        Duel duel = plugin.getDuelmanager().isInDuel(p);
+        if (duel == null) {
+            p.sendMessage(lang.getFrom("duel.not_in_duel", p));
+            return;
+        }
+        duel.checkOnPlayerDeath(p);
     }
 }

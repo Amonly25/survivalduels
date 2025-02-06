@@ -2,7 +2,9 @@ com\ar\askgaming\survivalduels\Listeners\EntityDamageListener.class
 com\ar\askgaming\survivalduels\Arenas\Commands.class
 com\ar\askgaming\survivalduels\Duels\Commands.class
 com\ar\askgaming\survivalduels\Duels\Team.class
+com\ar\askgaming\survivalduels\Listeners\PlayerCommandListener.class
 com\ar\askgaming\survivalduels\Utils\Language.class
+com\ar\askgaming\survivalduels\Duels\Duel$2.class
 com\ar\askgaming\survivalduels\Kits\Kit.class
 com\ar\askgaming\survivalduels\Duels\Queue.class
 com\ar\askgaming\survivalduels\Duels\Queue$QueueType.class
@@ -17,6 +19,7 @@ com\ar\askgaming\survivalduels\Listeners\PlayerQuitListener.class
 com\ar\askgaming\survivalduels\Listeners\PlayerJoinListener.class
 com\ar\askgaming\survivalduels\Duels\DuelManager.class
 com\ar\askgaming\survivalduels\Listeners\PlayerInteractListener.class
+com\ar\askgaming\survivalduels\Duels\Duel$MessageType.class
 com\ar\askgaming\survivalduels\Utils\PlaceHolders.class
 com\ar\askgaming\survivalduels\Kits\Commands.class
 com\ar\askgaming\survivalduels\Utils\PlayerData.class

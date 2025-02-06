@@ -10,10 +10,14 @@ import org.bukkit.World;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.scheduler.BukkitRunnable;
 
 import com.ar.askgaming.survivalduels.SurvivalDuels;
 import com.ar.askgaming.survivalduels.Arenas.Arena;
 import com.ar.askgaming.survivalduels.Kits.Kit;
+
+import net.md_5.bungee.api.ChatColor;
 
 public class Duel {
 
@@ -22,6 +26,8 @@ public class Duel {
     private final Team team1;
     private final Team team2;
     private final Arena arena;
+    private Team winner;
+    private Team loser;
     public enum DuelState {
         COUNTDOWN,
         INGAME,
@@ -45,7 +51,7 @@ public class Duel {
 
     public Duel(Team team1, Team team2, Arena arena, Kit kit) {
 
-        useOwnInventory = plugin.getConfig().getBoolean("duels.useOwnInventory",false);
+        useOwnInventory = plugin.getConfig().getBoolean("duels.useOwnInventory.enabled",false);
         keepInventory = plugin.getConfig().getBoolean("duels.useOwnInventory.keepInventory",false);
 
         this.team1 = team1; 
@@ -91,6 +97,7 @@ public class Duel {
             }
             player.setHealth(player.getAttribute(Attribute.MAX_HEALTH).getBaseValue());
             player.setGameMode(GameMode.SURVIVAL);
+            player.setFoodLevel(20);
             player.getActivePotionEffects().clear();
         }
         return counter == size;
@@ -103,9 +110,8 @@ public class Duel {
         for (Player player : list) {
             switch (type) {
                 case START:
-                    player.sendTitle("Go!", "", 10, 70, 20);
-                    break;
-                case END:
+                    player.sendTitle(ChatColor.GREEN+"Go!", "", 10, 50, 20);
+                            case END:
 
                     break;
                 case PREPARE:
@@ -114,6 +120,20 @@ public class Duel {
                     .replace("{arena}", arenaName)
                     .replace("{time}", countdown + "")
                     );
+                    new BukkitRunnable() {		
+                        int count = countdown;
+                        
+                        @Override
+                        public void run() {	      
+                            
+                            if (count == 0) {        		
+                                cancel(); 
+                                return;
+                            }	    	    	                                    	    	                        
+                            player.sendTitle("", ChatColor.GRAY+String.valueOf(count), 10, 20, 20);
+                            count--;  
+                        }
+                    }.runTaskTimer(plugin, 0L, 20L); 
                     break;
                 case ERROR_TP:
                     player.sendMessage(plugin.getLangManager().getFrom("duel."+type.toString().toLowerCase(), player));
@@ -154,7 +174,11 @@ public class Duel {
         return arena;
     }
     public void checkOnPlayerDeath(Player player) {
+        player.setHealth(20);
+        player.setGameMode(GameMode.SPECTATOR);
         spectators.add(player);
+
+
         team1.getAlivePlayers().remove(player);
         team2.getAlivePlayers().remove(player);
 
@@ -165,6 +189,9 @@ public class Duel {
         }
     }
     public void endDuel(Team winner, Team losser) {
+        this.winner = winner;
+        this.loser = losser;
+
         state = DuelState.END;
         arena.setInUse(false);
         plugin.getDuelmanager().getTeams().remove(winner);
@@ -174,7 +201,7 @@ public class Duel {
         resetPlayers(allPlayers);
 
         for (Player pl : Bukkit.getOnlinePlayers()){
-            pl.sendMessage(plugin.getLangManager().getFrom("duel.ended", pl).replace("{winner}", winner.getName()).replace("{losser}", losser.getName()));
+            pl.sendMessage(plugin.getLangManager().getFrom("duel.ended", pl).replace("{winner}", winner.getName()).replace("{loser}", losser.getName()));
         };
         plugin.getDuelLogger().log("Duel between " + team1.getName() + " and " + team2.getName() + " ended. Winner: " + winner.getName());
         plugin.getDuelmanager().modifyStats(winner, losser);
@@ -187,12 +214,13 @@ public class Duel {
 
         try {
             player.teleport(plugin.getDuelmanager().getLastLocation().getOrDefault(player, location));
-            if (useOwnInventory && keepInventory) {
-                player.getInventory().setContents(plugin.getDuelmanager().getLastInventory().get(player));
+            if (useOwnInventory && !keepInventory) {
+                for (Player p : loser.getDuelPlayers()) {
+                    plugin.getDuelmanager().getLastInventory().put(p, new ItemStack[36]);
+
+                }
             }
-            if (!useOwnInventory) {
-                player.getInventory().setContents(plugin.getDuelmanager().getLastInventory().get(player));
-            }
+            player.getInventory().setContents(plugin.getDuelmanager().getLastInventory().get(player));
 
             plugin.getDuelLogger().log("Player " + player.getName() + " teleported back to spawn and inventory restored.");
             plugin.getDuelmanager().getLastLocation().remove(player);

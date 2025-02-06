@@ -98,6 +98,7 @@ public class DuelManager {
         queue.getPlayers().clear();
 
     }
+    //#region createDuel
     private void createDuel(Team team1, Team team2) {
         Arena arena = plugin.getArenamanager().getArenaAvailable(2);
         if (arena == null) {
@@ -175,10 +176,12 @@ public class DuelManager {
         return teams;
     }
     public void onShutdown() {
-        for (Player player : lastLocation.keySet()) {
+        List<Player> players = new ArrayList<>(lastLocation.keySet());
+    
+        for (Player player : players) {
             checkRollBack(player);
         }
- 
+        
     }
     public void checkRollBack(Player p) {
         try {
@@ -197,6 +200,7 @@ public class DuelManager {
 
     private HashMap<Player, Player> requests = new HashMap<>();
 
+    //#region request
     public void requestDuel(Player p, Player target) {
         if (requests.containsKey(p) && requests.get(p) == target) {
             p.sendMessage(lang.getFrom("duel.already_send", p));
@@ -212,7 +216,7 @@ public class DuelManager {
         }
         requests.put(p, target);
         p.sendMessage(lang.getFrom("duel.request", p).replace("{player}", target.getName()));
-        target.sendMessage(lang.getFrom("duel.receive", p).replace("{player}", p.getName()));
+        target.sendMessage(lang.getFrom("duel.received", p).replace("{player}", p.getName()));
 
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
             if (requests.containsKey(p) && requests.get(p) == target) {
@@ -252,7 +256,7 @@ public class DuelManager {
         String path = player.getUniqueId().toString() + ".losses";
         config.set(path, config.getInt(path, 0) + 1);
     }
-    
+    //#region elo
     public void setElo(OfflinePlayer player, int newElo) {
         plugin.getPlayerData().getConfig().set(player.getUniqueId().toString() + ".elo", newElo);
     }

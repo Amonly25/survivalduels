@@ -23,10 +23,8 @@ public class EntityDamageListener implements Listener {
     public void onEntityDamageByEntity(EntityDamageByEntityEvent event) {
         
         if (event.getEntity() instanceof Player) {
-
             handlePlayerDamage(event);
         }
-
     }
     private void handlePlayerDamage(EntityDamageByEntityEvent event) {
         Player damaged = (Player) event.getEntity();
@@ -64,8 +62,6 @@ public class EntityDamageListener implements Listener {
             }
             
             if (damaged.getHealth() - event.getFinalDamage() <= 0) {
-                damaged.setHealth(20);
-                damaged.setGameMode(GameMode.SPECTATOR);
                 duel.checkOnPlayerDeath(damaged);
             }
         }
@@ -79,8 +75,6 @@ public class EntityDamageListener implements Listener {
                 return;
             }
             if (damaged.getHealth() - event.getFinalDamage() <= 0) {
-                damaged.setHealth(20);
-                damaged.setGameMode(GameMode.SPECTATOR);
                 duel.checkOnPlayerDeath(damaged);
             }
         }

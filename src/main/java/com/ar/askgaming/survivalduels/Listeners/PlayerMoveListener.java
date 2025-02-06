@@ -4,6 +4,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.event.player.PlayerTeleportEvent;
+import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 
 import com.ar.askgaming.survivalduels.SurvivalDuels;
 import com.ar.askgaming.survivalduels.Duels.Duel;
@@ -34,5 +36,17 @@ public class PlayerMoveListener implements Listener{
             event.setCancelled(true);
         }
     }
+    @EventHandler
+	public void onTp(PlayerTeleportEvent e) {
+		Player p = e.getPlayer();
+
+		if (p.isOp()) return;
+
+		Duel duel = plugin.getDuelmanager().getDuel(p);
+        if (duel == null) {
+            return;
+        }
+        e.setCancelled(true);
+	}
     
 }

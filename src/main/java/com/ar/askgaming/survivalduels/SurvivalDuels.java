@@ -9,6 +9,8 @@ import com.ar.askgaming.survivalduels.Duels.DuelManager;
 import com.ar.askgaming.survivalduels.Kits.Kit;
 import com.ar.askgaming.survivalduels.Kits.KitManager;
 import com.ar.askgaming.survivalduels.Listeners.EntityDamageListener;
+import com.ar.askgaming.survivalduels.Listeners.MiscListeners;
+import com.ar.askgaming.survivalduels.Listeners.PlayerCommandListener;
 import com.ar.askgaming.survivalduels.Listeners.PlayerInteractListener;
 import com.ar.askgaming.survivalduels.Listeners.PlayerJoinListener;
 import com.ar.askgaming.survivalduels.Listeners.PlayerMoveListener;
@@ -34,13 +36,12 @@ public class SurvivalDuels extends JavaPlugin {
         ConfigurationSerialization.registerClass(Arena.class,"Arena");
         ConfigurationSerialization.registerClass(Kit.class,"Kit");
 
+        langManager = new Language(this);
         playerData = new PlayerData(this);
-
         duelmanager = new DuelManager(this);
         arenamanager = new ArenaManager(this);
         kitmanager = new KitManager(this);
         logger = new DuelLogger(this);
-        langManager = new Language(this);
                 
         getServer().getPluginManager().registerEvents(new EntityDamageListener(this), this);
         getServer().getPluginManager().registerEvents(new PlayerQuitListener(this), this);
@@ -48,6 +49,8 @@ public class SurvivalDuels extends JavaPlugin {
 
         new PlayerJoinListener(this);
         new PlayerInteractListener(this);
+        new PlayerCommandListener(this);
+        new MiscListeners(this);
 
         if (getServer().getPluginManager().getPlugin("PlaceholderAPI") != null) {
             new PlaceHolders(this).register();
