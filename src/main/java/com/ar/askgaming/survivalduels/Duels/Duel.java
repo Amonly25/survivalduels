@@ -1,13 +1,16 @@
 package com.ar.askgaming.survivalduels.Duels;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.attribute.Attribute;
+import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 import org.bukkit.inventory.ItemStack;
@@ -49,6 +52,11 @@ public class Duel {
     private boolean useOwnInventory = false;
     private boolean keepInventory = false;
 
+    private HashMap<Block, Material> blocks = new HashMap<>();
+
+    public HashMap<Block, Material> getBlocks() {
+        return blocks;
+    }
     public Duel(Team team1, Team team2, Arena arena, Kit kit) {
 
         useOwnInventory = plugin.getConfig().getBoolean("duels.useOwnInventory.enabled",false);
@@ -69,13 +77,15 @@ public class Duel {
                 return;
         }
         for (Player pl : Bukkit.getOnlinePlayers()){
-            pl.sendMessage(plugin.getLangManager().getFrom("duel.created", pl).replace("{team1}",
-             team1.getName()).replace("{team2}", team2.getName()));
+            if (pl.hasPermission("survivalduels.use")) {
+                pl.sendMessage(plugin.getLangManager().getFrom("duel.created", pl).replace("{team1}",
+                 team1.getName()).replace("{team2}", team2.getName()));
+            }
         };
 
         sendMessageToTeams(MessageType.PREPARE);
        
-        plugin.getDuelLogger().log("Duel between " + team1.getName() + " and " + team2.getName() + " started. Arena: " + arenaName + ", Kit: " + kit);
+        plugin.getDuelLogger().log("Duel between " + team1.getName() + " and " + team2.getName() + " started. Arena: " + arenaName + ", Kit: " + kit.getName());
 
         setKit(team1.getDuelPlayers(), kit);
         setKit(team2.getDuelPlayers(), kit);
@@ -178,7 +188,6 @@ public class Duel {
         player.setGameMode(GameMode.SPECTATOR);
         spectators.add(player);
 
-
         team1.getAlivePlayers().remove(player);
         team2.getAlivePlayers().remove(player);
 
@@ -201,10 +210,17 @@ public class Duel {
         resetPlayers(allPlayers);
 
         for (Player pl : Bukkit.getOnlinePlayers()){
-            pl.sendMessage(plugin.getLangManager().getFrom("duel.ended", pl).replace("{winner}", winner.getName()).replace("{loser}", losser.getName()));
+            if (pl.hasPermission("survivalduels.use")) {
+                pl.sendMessage(plugin.getLangManager().getFrom("duel.ended", pl).replace("{winner}", winner.getName()).replace("{loser}", losser.getName()));
+            }
         };
         plugin.getDuelLogger().log("Duel between " + team1.getName() + " and " + team2.getName() + " ended. Winner: " + winner.getName());
         plugin.getDuelmanager().modifyStats(winner, losser);
+
+        for (Block block : blocks.keySet()) {
+            block.setType(blocks.get(block));
+
+        }
         plugin.getDuelmanager().getDuels().remove(this);
     }
     
@@ -213,7 +229,10 @@ public class Duel {
         Location location = world.getSpawnLocation();
 
         try {
-            player.teleport(plugin.getDuelmanager().getLastLocation().getOrDefault(player, location));
+            boolean tp = player.teleport(plugin.getDuelmanager().getLastLocation().getOrDefault(player, location), TeleportCause.PLUGIN);
+            if (!tp) {
+                plugin.getDuelLogger().log("Error while teleporting player back.");
+            }
             if (useOwnInventory && !keepInventory) {
                 for (Player p : loser.getDuelPlayers()) {
                     plugin.getDuelmanager().getLastInventory().put(p, new ItemStack[36]);
@@ -234,9 +253,10 @@ public class Duel {
     private void resetPlayers(List<Player> players) {
         players.forEach(player -> {
             try {
-                teleportBack(player);
                 player.setGameMode(GameMode.SURVIVAL);
                 player.getActivePotionEffects().clear();
+                player.setFireTicks(0);
+                teleportBack(player);
             } catch (Exception e) {
                 plugin.getDuelLogger().log("Failed to rollback player " + player.getName() + ": " + e.getMessage());
                 e.printStackTrace();

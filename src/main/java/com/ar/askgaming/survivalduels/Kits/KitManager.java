@@ -79,9 +79,9 @@ public class KitManager {
         return kits.get((int) (Math.random() * kits.size()));
     }
     public void setKit(Player p, Kit kit) {
-        kit.setArmor(p.getInventory().getArmorContents());
-        kit.setItems(p.getInventory().getContents());
-        p.sendMessage("Kit set");
+        kit.setArmor(p.getInventory().getArmorContents().clone());
+        kit.setItems(p.getInventory().getContents().clone());
+        p.sendMessage("Kit " + kit.getName() + " set");
         save();
     }
 

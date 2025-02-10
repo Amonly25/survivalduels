@@ -10,11 +10,13 @@ import com.ar.askgaming.survivalduels.Kits.Kit;
 import com.ar.askgaming.survivalduels.Kits.KitManager;
 import com.ar.askgaming.survivalduels.Listeners.EntityDamageListener;
 import com.ar.askgaming.survivalduels.Listeners.MiscListeners;
+import com.ar.askgaming.survivalduels.Listeners.PlayerBlockListener;
 import com.ar.askgaming.survivalduels.Listeners.PlayerCommandListener;
 import com.ar.askgaming.survivalduels.Listeners.PlayerInteractListener;
 import com.ar.askgaming.survivalduels.Listeners.PlayerJoinListener;
 import com.ar.askgaming.survivalduels.Listeners.PlayerMoveListener;
 import com.ar.askgaming.survivalduels.Listeners.PlayerQuitListener;
+import com.ar.askgaming.survivalduels.Listeners.PlayerTeleportListener;
 import com.ar.askgaming.survivalduels.Utils.DuelLogger;
 import com.ar.askgaming.survivalduels.Utils.Language;
 import com.ar.askgaming.survivalduels.Utils.PlaceHolders;
@@ -51,6 +53,8 @@ public class SurvivalDuels extends JavaPlugin {
         new PlayerInteractListener(this);
         new PlayerCommandListener(this);
         new MiscListeners(this);
+        new PlayerBlockListener(this);
+        new PlayerTeleportListener(this);
 
         if (getServer().getPluginManager().getPlugin("PlaceholderAPI") != null) {
             new PlaceHolders(this).register();

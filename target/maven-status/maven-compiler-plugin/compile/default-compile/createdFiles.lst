@@ -11,6 +11,7 @@ com\ar\askgaming\survivalduels\Duels\Queue$QueueType.class
 com\ar\askgaming\survivalduels\Utils\DuelLogger.class
 com\ar\askgaming\survivalduels\SurvivalDuels.class
 com\ar\askgaming\survivalduels\Duels\Duel$DuelState.class
+com\ar\askgaming\survivalduels\Listeners\PlayerTeleportListener.class
 com\ar\askgaming\survivalduels\Arenas\ArenaManager.class
 com\ar\askgaming\survivalduels\Duels\Duel$1.class
 com\ar\askgaming\survivalduels\Duels\DuelManager$1.class
@@ -22,7 +23,9 @@ com\ar\askgaming\survivalduels\Listeners\PlayerInteractListener.class
 com\ar\askgaming\survivalduels\Duels\Duel$MessageType.class
 com\ar\askgaming\survivalduels\Utils\PlaceHolders.class
 com\ar\askgaming\survivalduels\Kits\Commands.class
+com\ar\askgaming\survivalduels\Listeners\MiscListeners.class
 com\ar\askgaming\survivalduels\Utils\PlayerData.class
 com\ar\askgaming\survivalduels\Duels\Duel.class
 com\ar\askgaming\survivalduels\Arenas\Arena.class
 com\ar\askgaming\survivalduels\Listeners\PlayerMoveListener.class
+com\ar\askgaming\survivalduels\Listeners\PlayerBlockListener.class

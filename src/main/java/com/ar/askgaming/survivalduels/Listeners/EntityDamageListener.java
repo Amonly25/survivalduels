@@ -76,6 +76,7 @@ public class EntityDamageListener implements Listener {
             }
             if (damaged.getHealth() - event.getFinalDamage() <= 0) {
                 duel.checkOnPlayerDeath(damaged);
+                event.setCancelled(true);
             }
         }
     }

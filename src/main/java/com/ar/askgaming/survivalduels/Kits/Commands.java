@@ -111,7 +111,7 @@ public class Commands implements TabExecutor{
             p.sendMessage("Kit not found");
             return;
         }
-
+        
         plugin.getKitmanager().setKit(p, kit);
     }
     private void getKit(Player p, String[] args){
@@ -126,7 +126,9 @@ public class Commands implements TabExecutor{
             return;
         }
 
-        plugin.getKitmanager().setKit(p, kit);
+        p.getInventory().setContents(kit.getItems());
+        p.getInventory().setArmorContents(kit.getArmor());
+        p.sendMessage("Kit " + kit.getName() + " loaded.");
     }
 
 }

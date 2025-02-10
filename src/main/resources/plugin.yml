@@ -7,13 +7,13 @@ description: Survival Duels plugin for AskGaming
 commands:
   duels:
     description: Start a duel
-    permission: survivalduels.duels
+    permission: survivalduels.use
     aliases: [duel]
   arenas:
     description: Manage arenas
-    permission: survivalduels.arenas
+    permission: survivalduels.admin
     aliases: [arena] 
   dkit:
     description: Give a player a kit
-    permission: survivalduels.kit
+    permission: survivalduels.admin
     aliases: [ckit]

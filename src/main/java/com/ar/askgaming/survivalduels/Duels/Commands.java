@@ -88,7 +88,9 @@ public class Commands implements TabExecutor {
         for (Queue queue : plugin.getDuelmanager().getQueues()) {
             if (queue.getType() == type) {
                 for (Player player : Bukkit.getOnlinePlayers()) {
-                    player.sendMessage(lang.getFrom("queue.enter", p).replace("{queue}", queue.getType().toString()));
+                    if (player.hasPermission("survivalduels.use")) {
+                        player.sendMessage(lang.getFrom("queue.enter", p).replace("{queue}", queue.getType().toString()));
+                    }
                 }
                 queue.addPlayer(p);
                 return;

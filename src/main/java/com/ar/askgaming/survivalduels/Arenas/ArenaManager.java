@@ -3,6 +3,7 @@ package com.ar.askgaming.survivalduels.Arenas;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import java.util.Set;
 
 import org.bukkit.configuration.file.FileConfiguration;
@@ -62,13 +63,17 @@ public class ArenaManager {
         if (arenas.isEmpty()) {
             return null;
         }
-
+        List<Arena> availables = new ArrayList<>();
         for (Arena arena : arenas) {
+
             if (arena.getMaxPlayers() >= size && arena.isInUse() == false && arena.getSpawnsTeam1() != null && arena.getSpawnsTeam2() != null) {
-                return arena;
+                availables.add(arena);
             }
         }
-        return null;
+        if (availables.isEmpty()) {
+            return null;
+        }
+        return availables.get(new Random().nextInt(availables.size()));
     }
 
     public void createArena(String name) {
