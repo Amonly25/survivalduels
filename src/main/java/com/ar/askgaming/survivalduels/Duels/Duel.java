@@ -10,7 +10,6 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.attribute.Attribute;
-import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 import org.bukkit.inventory.ItemStack;
@@ -44,6 +43,10 @@ public class Duel {
     }
 
     private List<Player> spectators = new ArrayList<>();
+    public List<Player> getSpectators() {
+        return spectators;
+    }
+
     private String kit;	
     private String arenaName;
     private int countdown = 10;
@@ -52,9 +55,9 @@ public class Duel {
     private boolean useOwnInventory = false;
     private boolean keepInventory = false;
 
-    private HashMap<Block, Material> blocks = new HashMap<>();
+    private HashMap<Location, Material> blocks = new HashMap<>();
 
-    public HashMap<Block, Material> getBlocks() {
+    public HashMap<Location, Material> getBlocks() {
         return blocks;
     }
     public Duel(Team team1, Team team2, Arena arena, Kit kit) {
@@ -184,7 +187,6 @@ public class Duel {
         return arena;
     }
     public void checkOnPlayerDeath(Player player) {
-        player.setHealth(20);
         player.setGameMode(GameMode.SPECTATOR);
         spectators.add(player);
 
@@ -217,9 +219,8 @@ public class Duel {
         plugin.getDuelLogger().log("Duel between " + team1.getName() + " and " + team2.getName() + " ended. Winner: " + winner.getName());
         plugin.getDuelmanager().modifyStats(winner, losser);
 
-        for (Block block : blocks.keySet()) {
-            block.setType(blocks.get(block));
-
+        for (Location loc : blocks.keySet()) {
+            loc.getBlock().setType(blocks.get(loc));
         }
         plugin.getDuelmanager().getDuels().remove(this);
     }
@@ -239,9 +240,14 @@ public class Duel {
 
                 }
             }
-            player.getInventory().setContents(plugin.getDuelmanager().getLastInventory().get(player));
+            ItemStack[] items = plugin.getDuelmanager().getLastInventory().get(player);
+            if (items != null) {
+                player.getInventory().setContents(plugin.getDuelmanager().getLastInventory().get(player));
+                plugin.getDuelLogger().log("Player " + player.getName() + " Inventory restored.");
 
-            plugin.getDuelLogger().log("Player " + player.getName() + " teleported back to spawn and inventory restored.");
+            }
+
+            plugin.getDuelLogger().log("Player " + player.getName() + " teleported back to spawn.");
             plugin.getDuelmanager().getLastLocation().remove(player);
             plugin.getDuelmanager().getLastInventory().remove(player);
         } catch (IllegalArgumentException e) {
@@ -255,6 +261,8 @@ public class Duel {
             try {
                 player.setGameMode(GameMode.SURVIVAL);
                 player.getActivePotionEffects().clear();
+                player.setAbsorptionAmount(0);
+                player.setHealth(player.getAttribute(Attribute.MAX_HEALTH).getBaseValue());
                 player.setFireTicks(0);
                 teleportBack(player);
             } catch (Exception e) {

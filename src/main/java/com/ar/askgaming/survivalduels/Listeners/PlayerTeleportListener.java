@@ -26,12 +26,17 @@ public class PlayerTeleportListener implements Listener{
         Duel duel = plugin.getDuelmanager().isInDuel(p);
         if (duel == null) return;
 
+        if (event.getCause() == TeleportCause.ENDER_PEARL) {
+            event.setCancelled(false);
+            return;
+
+        }
         if (duel.getState() == DuelState.INGAME || duel.getState() == DuelState.COUNTDOWN) {
-           if (event.getCause() != TeleportCause.ENDER_PEARL) {
-               event.setCancelled(true);
-
-           }
-
+            if (duel.getSpectators().contains(p)){
+                return;
+            }
+            event.setCancelled(true);
+            
         }
         if (duel.getState() == DuelState.END && event.isCancelled() ) {
             event.setCancelled(false);

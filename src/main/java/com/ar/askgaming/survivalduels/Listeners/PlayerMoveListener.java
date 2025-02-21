@@ -35,6 +35,11 @@ public class PlayerMoveListener implements Listener{
         if (duel.getState() == Duel.DuelState.COUNTDOWN) {
             event.setCancelled(true);
         }
+        if (event.getTo().getY() < 0){
+            p.teleport(duel.getArena().getSpawnsTeam1());
+            duel.checkOnPlayerDeath(p);
+
+        }
     }
     @EventHandler
 	public void onTp(PlayerTeleportEvent e) {

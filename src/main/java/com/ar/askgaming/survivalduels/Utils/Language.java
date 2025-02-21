@@ -62,6 +62,9 @@ public class Language {
     
         // Guardar en caché
         cache.computeIfAbsent(locale, k -> new HashMap<>()).put(path, required);
+        if (path.startsWith("misc.")) {
+            return ChatColor.translateAlternateColorCodes('&', required);
+        }
         return ChatColor.translateAlternateColorCodes('&', prefix + required);
     }
     

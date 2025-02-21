@@ -23,35 +23,34 @@ public class PlayerBlockListener implements Listener{
     }
     @EventHandler
     public void onBlockBreak(BlockBreakEvent event) {
-        Player p = event.getPlayer();
-        Duel duel = plugin.getDuelmanager().isInDuel(p);
-        if (duel == null) return;
-        Block b = event.getBlock();
-        duel.getBlocks().put(b, b.getType());
+        handleBlockModification(event.getPlayer(), event.getBlock());
     }
+
     @EventHandler
     public void onBlockPlace(BlockPlaceEvent event) {
-        Player p = event.getPlayer();
-        Duel duel = plugin.getDuelmanager().isInDuel(p);
-        if (duel == null) return;
-        Block b = event.getBlock();
-        duel.getBlocks().put(b, b.getType());
+        handleBlockModification(event.getPlayer(), event.getBlock());
     }
+
     @EventHandler
-    public void onPlayerBucketEmpty(PlayerBucketEmptyEvent e) {
-        Player p = e.getPlayer();
-        Duel duel = plugin.getDuelmanager().isInDuel(p);
-        if (duel == null) return;
-        Block b = e.getBlock();
-        duel.getBlocks().put(b, b.getType());
+    public void onPlayerBucketEmpty(PlayerBucketEmptyEvent event) {
+        Block block = event.getBlockClicked().getRelative(event.getBlockFace());
+        handleBlockModification(event.getPlayer(), block);
     }
+
     @EventHandler
-    public void onPlayerBucketFill(PlayerBucketFillEvent e) {
-        Player p = e.getPlayer();
-        Duel duel = plugin.getDuelmanager().isInDuel(p);
+    public void onPlayerBucketFill(PlayerBucketFillEvent event) {
+        Block block = event.getBlockClicked(); // Se llena el bloque tocado
+        handleBlockModification(event.getPlayer(), block);
+    }
+
+    private void handleBlockModification(Player player, Block block) {
+        Duel duel = plugin.getDuelmanager().isInDuel(player);
         if (duel == null) return;
-        Block b = e.getBlock();
-        duel.getBlocks().put(b, b.getType());
+
+        // Solo registrar bloques si aún no están guardados
+        if (!duel.getBlocks().containsKey(block.getLocation())) {
+            duel.getBlocks().put(block.getLocation(), block.getType());
+        }
     }
 
 }

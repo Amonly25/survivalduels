@@ -59,10 +59,12 @@ public class EntityDamageListener implements Listener {
 
             if (teamDamaged != null && TeamDamager != null && teamDamaged.equals(TeamDamager)) {
                 event.setCancelled(true);
+                return;
             }
             
             if (damaged.getHealth() - event.getFinalDamage() <= 0) {
                 duel.checkOnPlayerDeath(damaged);
+                event.setCancelled(true);
             }
         }
     }

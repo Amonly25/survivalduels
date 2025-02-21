@@ -29,7 +29,7 @@ public class Commands implements TabExecutor {
             return List.of("queue", "leave");
         }
         if (args.length == 2) {
-            return List.of("solo", "duo", "trio", "squad");
+            return List.of("solo", "duo", "trio", "squad","leave");
         }
        
         return null;
@@ -89,7 +89,7 @@ public class Commands implements TabExecutor {
             if (queue.getType() == type) {
                 for (Player player : Bukkit.getOnlinePlayers()) {
                     if (player.hasPermission("survivalduels.use")) {
-                        player.sendMessage(lang.getFrom("queue.enter", p).replace("{queue}", queue.getType().toString()));
+                        player.sendMessage(lang.getFrom("queue.enter", p).replace("{queue}", queue.getType().toString()).replace("{player}", p.getName()));
                     }
                 }
                 queue.addPlayer(p);

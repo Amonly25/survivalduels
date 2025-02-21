@@ -38,13 +38,16 @@ public class Commands implements TabExecutor{
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (args.length == 0){
-            sender.sendMessage("Use kit <create/delete/list/set>");
-        }
+
         if (!(sender instanceof Player)){
             sender.sendMessage("Only players can execute this");
         }
         Player p = (Player) sender;
+
+        if (args.length == 0){
+            sender.sendMessage("Use kit <create/delete/list/set>");
+        }
+
         switch (args[0].toLowerCase()) {
             case "create":
                 createKit(p, args);
@@ -65,11 +68,11 @@ public class Commands implements TabExecutor{
                 sender.sendMessage("Use kit <create/delete/list/set>");
                 break;
         }
-        return false;
+        return true;
     }
     private void createKit(Player p, String[] args){
-        if (args.length == 1){
-            p.sendMessage("Use /kit create <name>");
+        if (args.length < 2) {
+            p.sendMessage("Uso: /dkit create <nombre>");
             return;
         }
         String name = args[1];
@@ -81,8 +84,8 @@ public class Commands implements TabExecutor{
         p.sendMessage("Kit created");
     }
     private void deleteKit(Player p, String[] args){
-        if (args.length == 1){
-            p.sendMessage("Use /kit delete <name>");
+        if (args.length < 2) {
+            p.sendMessage("Uso: /dkit delete <nombre>");
             return;
         }
         String name = args[1];
@@ -94,10 +97,16 @@ public class Commands implements TabExecutor{
         plugin.getKitmanager().deleteKit(kit);
         p.sendMessage("Kit deleted");
     }
-    private void listKits(Player p){
-        p.sendMessage("Kits:");
-        for (Kit kit : plugin.getKitmanager().getKits()){
-            p.sendMessage(kit.getName());
+    private void listKits(Player p) {
+        List<Kit> kits = plugin.getKitmanager().getKits();
+        if (kits.isEmpty()) {
+            p.sendMessage("No hay kits disponibles.");
+            return;
+        }
+
+        p.sendMessage("Kits disponibles:");
+        for (Kit kit : kits) {
+            p.sendMessage("- " + kit.getName());
         }
     }
     private void setKit(Player p, String[] args){
@@ -111,8 +120,8 @@ public class Commands implements TabExecutor{
             p.sendMessage("Kit not found");
             return;
         }
-        
         plugin.getKitmanager().setKit(p, kit);
+        p.sendMessage("Kit " + kit.getName() + " set.");
     }
     private void getKit(Player p, String[] args){
         if (args.length < 2){

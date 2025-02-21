@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.Sound;
@@ -17,6 +16,11 @@ import com.ar.askgaming.survivalduels.SurvivalDuels;
 import com.ar.askgaming.survivalduels.Arenas.Arena;
 import com.ar.askgaming.survivalduels.Kits.Kit;
 import com.ar.askgaming.survivalduels.Utils.Language;
+
+import net.md_5.bungee.api.chat.ClickEvent;
+import net.md_5.bungee.api.chat.HoverEvent;
+import net.md_5.bungee.api.chat.TextComponent;
+import net.md_5.bungee.api.chat.hover.content.Text;
 
 public class DuelManager {
     
@@ -108,6 +112,7 @@ public class DuelManager {
             }
             for (Player player : team2.getDuelPlayers()) {
                 player.sendMessage(lang.getFrom("arena.not_found", player));
+        
             }
             return;
         }
@@ -216,7 +221,7 @@ public class DuelManager {
         }
         requests.put(p, target);
         p.sendMessage(lang.getFrom("duel.request", p).replace("{player}", target.getName()));
-        target.sendMessage(lang.getFrom("duel.received", p).replace("{player}", p.getName()));
+        sendDuelMessage(p, target);
 
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
             if (requests.containsKey(p) && requests.get(p) == target) {
@@ -227,6 +232,24 @@ public class DuelManager {
             }
         }, 20 * 60);
     }
+
+    private void sendDuelMessage(Player sender, Player target){
+        TextComponent message = new TextComponent(lang.getFrom("duel.received", target).replace("{player}", sender.getName()));
+
+        String click = lang.getFrom("misc.click_to_accept", target);
+
+        TextComponent clickableText = new TextComponent(click);
+      
+        clickableText.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/duel " + sender.getName()));
+
+        clickableText.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text(click)));
+
+        message.addExtra(clickableText);
+
+        target.spigot().sendMessage(message);
+
+    }
+
     public void modifyStats(Team winner, Team losser) {
         int minSize = Math.min(winner.getDuelPlayers().size(), losser.getDuelPlayers().size());
     

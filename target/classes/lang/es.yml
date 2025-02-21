@@ -1,0 +1,33 @@
+queue:
+  enter: "&7{player} se ha unido a la cola &6{queue}!"
+  leave: "&cHas salido de la cola para un duelo!"
+  already_in: "&c¡Ya estás en una cola!"
+  Invalid: "&c¡Cola inválida!"
+  in_queue: "&c¡Este jugador ya está en una cola!"
+  found: "&a¡Has encontrado una partida! Creando duelo..."
+
+duel:
+  in_duel: "&c¡Ya estás en un duelo!"
+  player_in_duel: "&c¡Este jugador ya está en un duelo!" 
+  created: "&7Duelo iniciado: &3{team1} &7vs &c{team2}!"
+  ended: "&a{winner} &7ha ganado el duelo contra &c{loser}!"
+  prepare: "&7El duelo comenzará en &e{time}&7 segundos, usando el kit &6{kit} &7en la arena &6{arena}!"
+  error_tp: "&cError al teletransportar a la arena, alguien no tiene permiso para tp, el duelo ha sido cancelado."
+  already_send: "&c¡Ya has enviado una solicitud de duelo a este jugador!"
+  request: "&7Has enviado una solicitud de duelo a &6{player}!"
+  received: "&c{player} &7te ha enviado una solicitud de duelo."
+  expired: "&6La solicitud de duelo de/hacia {player} ha expirado"
+  won: "&7Has &aganado &7el duelo, tu nuevo elo es &6{elo}!"
+  lose: "&7Has &cperdido &7el duelo, tu nuevo elo es &6{elo}!"
+  not_in_duel: "&c¡No estás en un duelo!"
+  cant_use_commands: "&cNo puedes usar comandos mientras estás en un duelo, usa /duel leave para salir del duelo!"
+
+commands:
+  player_not_found: "&c¡Jugador no encontrado!"
+  cant_duel_yourself: "&c¡No puedes retarte a un duelo a ti mismo!"
+
+arena:
+  not_found: "&c¡No se encontró una arena, cancelando el duelo!"
+
+misc:
+  click_to_accept: "&2Haz clic para aceptar"
