@@ -3,7 +3,6 @@ package com.ar.askgaming.survivalduels.Kits;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
@@ -11,11 +10,8 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.checkerframework.checker.units.qual.g;
 
 import com.ar.askgaming.survivalduels.SurvivalDuels;
-
-import net.md_5.bungee.api.chat.hover.content.Item;
 
 public class KitManager {
 
@@ -97,6 +93,7 @@ public class KitManager {
         p.sendMessage("Kit " + kit.getName() + " establecido.");
         config.set(kit.getName(), kit);
         save();
+        loadKits();
     }
     public void giveKit(Player p, Kit kit) {
         p.getInventory().setContents(kit.getItems());
