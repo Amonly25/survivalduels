@@ -1,5 +1,7 @@
 package com.ar.askgaming.survivalduels.Listeners;
 
+import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -23,33 +25,33 @@ public class PlayerBlockListener implements Listener{
     }
     @EventHandler
     public void onBlockBreak(BlockBreakEvent event) {
-        handleBlockModification(event.getPlayer(), event.getBlock());
+        handleBlockModification(event.getPlayer(), event.getBlock().getLocation(), event.getBlock().getType());
     }
 
     @EventHandler
     public void onBlockPlace(BlockPlaceEvent event) {
-        handleBlockModification(event.getPlayer(), event.getBlock());
+        handleBlockModification(event.getPlayer(), event.getBlock().getLocation(), Material.AIR);
     }
 
     @EventHandler
     public void onPlayerBucketEmpty(PlayerBucketEmptyEvent event) {
         Block block = event.getBlockClicked().getRelative(event.getBlockFace());
-        handleBlockModification(event.getPlayer(), block);
+        handleBlockModification(event.getPlayer(), block.getLocation(), Material.AIR);
     }
 
     @EventHandler
     public void onPlayerBucketFill(PlayerBucketFillEvent event) {
         Block block = event.getBlockClicked(); // Se llena el bloque tocado
-        handleBlockModification(event.getPlayer(), block);
+        handleBlockModification(event.getPlayer(), block.getLocation(), block.getType());
     }
 
-    private void handleBlockModification(Player player, Block block) {
-        Duel duel = plugin.getDuelmanager().isInDuel(player);
+    private void handleBlockModification(Player player, Location loc, Material material) {
+        Duel duel = plugin.getDuelmanager().getDuel(player);
         if (duel == null) return;
 
         // Solo registrar bloques si aún no están guardados
-        if (!duel.getBlocks().containsKey(block.getLocation())) {
-            duel.getBlocks().put(block.getLocation(), block.getType());
+        if (!duel.getBlocks().containsKey(loc)) {
+            duel.getBlocks().put(loc, material);
         }
     }
 

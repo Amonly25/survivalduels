@@ -3,11 +3,14 @@ package com.ar.askgaming.survivalduels.Duels;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.UUID;
 
 import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.Sound;
+import org.bukkit.attribute.Attribute;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -26,93 +29,41 @@ public class DuelManager {
     
     private SurvivalDuels plugin;
     private Language lang;
-    public DuelManager(SurvivalDuels plugin) {
-        this.plugin = plugin;
-        this.lang = plugin.getLangManager();
-        new Commands(plugin);
-
-        Queue solo = new Queue(Queue.QueueType.SOLO);
-        Queue duo = new Queue(Queue.QueueType.DUO);
-        Queue trio = new Queue(Queue.QueueType.TRIO);
-        Queue squad = new Queue(Queue.QueueType.SQUAD);
-
-        queues.add(solo);
-        queues.add(duo);
-        queues.add(trio);
-        queues.add(squad);
-
-    }
-    private List<Queue> queues = new ArrayList<>();
     private List<Duel> duels = new ArrayList<>();
     private List<Team> teams = new ArrayList<>();
 
-    private HashMap<Player, Location> lastLocation = new HashMap<>();
-    private HashMap<Player, ItemStack[]> lastInventory = new HashMap<>();
+    private HashMap<UUID, Location> lastLocation = new HashMap<>();
+    private HashMap<UUID, ItemStack[]> lastInventory = new HashMap<>();
+    private HashMap<Player, Player> requests = new HashMap<>();
 
-    public HashMap<Player, ItemStack[]> getLastInventory() {
-        return lastInventory;
+    public enum DuelState {
+        COUNTDOWN,
+        INGAME,
+        END
     }
-    public void setLastInventory(HashMap<Player, ItemStack[]> lastInventory) {
-        this.lastInventory = lastInventory;
+    public enum MessageType {
+        START,
+        END,
+        PREPARE,
+        ERROR_TP
     }
-    public HashMap<Player, Location> getLastLocation() {
-        return lastLocation;
+
+    public DuelManager(SurvivalDuels plugin) {
+        this.plugin = plugin;
+        this.lang = plugin.getLangManager();
+
+        new Commands(plugin, this);
     }
-    public void setLastLocation(HashMap<Player, Location> lastLocation) {
-        this.lastLocation = lastLocation;
-    }
-    public void createDuel(Queue queue) {
 
-        List<Player> players = queue.getPlayers();
-        List<Player> team1 = new ArrayList<>();
-        List<Player> team2 = new ArrayList<>();
-    
-        for (Player player : players) {
-           player.sendMessage(lang.getFrom("queue.found", player));
-        }
-
-        int teamSize = 0;
-        switch (queue.getType()) {
-            case SOLO:
-                teamSize = 1;
-                break;
-            case DUO:
-                teamSize = 2;
-                break;
-            case TRIO:
-                teamSize = 3;
-                break;
-            case SQUAD:
-                teamSize = 4;
-                break;
-            default:
-                return;
-        }
-    
-        for (int i = 0; i < teamSize; i++) {
-            team1.add(players.get(i));
-            team2.add(players.get(i + teamSize));
-        }
-    
-        Team t1 = new Team(team1);
-        Team t2 = new Team(team2);
-
-        createDuel(t1, t2);
-
-        queue.getPlayers().clear();
-
-    }
     //#region createDuel
-    private void createDuel(Team team1, Team team2) {
+    public void createDuel(Team team1, Team team2) {
         Arena arena = plugin.getArenamanager().getArenaAvailable(2);
         if (arena == null) {
             for (Player player : team1.getDuelPlayers()) {
                 player.sendMessage(lang.getFrom("arena.not_found", player));
-           
             }
             for (Player player : team2.getDuelPlayers()) {
                 player.sendMessage(lang.getFrom("arena.not_found", player));
-        
             }
             return;
         }
@@ -121,89 +72,99 @@ public class DuelManager {
 
         arena.setInUse(true);
         for (Player player : team1.getDuelPlayers()) {
-            lastLocation.put(player, player.getLocation());
-            lastInventory.put(player, player.getInventory().getContents());
+            lastLocation.put(player.getUniqueId(), player.getLocation());
+            lastInventory.put(player.getUniqueId(), player.getInventory().getContents());
+
         }
         for (Player player : team2.getDuelPlayers()) {
-            lastLocation.put(player, player.getLocation());
-            lastInventory.put(player, player.getInventory().getContents());
+            lastLocation.put(player.getUniqueId(), player.getLocation());
+            lastInventory.put(player.getUniqueId(), player.getInventory().getContents());
         }
         Kit kit = plugin.getKitmanager().getRandomKit();
         Duel duel = new Duel(team1, team2, arena, kit);
         duels.add(duel);
+
+        for (Player pl : Bukkit.getOnlinePlayers()){
+            if (pl.hasPermission("survivalduels.use")) {
+                pl.sendMessage(plugin.getLangManager().getFrom("duel.created", pl).replace("{team1}",
+                 team1.getName()).replace("{team2}", team2.getName()));
+            }
+        };
     }
 
-    public Duel isInDuel(Player player) {
-        for (Duel duel : duels) {
-            if (duel.getTeam1().getDuelPlayers().contains(player) || duel.getTeam2().getDuelPlayers().contains(player)) {
-                return duel;
-            }
-        }
-        return null;
-    }
-    public Duel getDuel(Player player) {
-        for (Duel duel : duels) {
-            if (duel.getTeam1().getDuelPlayers().contains(player) || duel.getTeam2().getDuelPlayers().contains(player)) {
-                return duel;
-            }
-        }
-        return null;
-    }
-    public Team isInTeam(Player player) {
-        for (Team team : teams) {
-            if (team.getDuelPlayers().contains(player)) {
-                return team;
-            }
-        }
-        return null;
-    }
-    public Queue isInQueue(Player player) {
-        for (Queue queue : queues) {
-            if (queue.getPlayers().contains(player)) {
-                return queue;
-            }
-        }
-        return null;
-    }
-    public void leaveQueue(Player player) {
-        Queue queue = isInQueue(player);
-        if (queue != null) {
-            queue.removePlayer(player);
-        }
-    }
-    public List<Queue> getQueues() {
-        return queues;
-    }
-    public List<Duel> getDuels() {
-        return duels;
-    }
-    public List<Team> getTeams() {
-        return teams;
-    }
+    //#region rollback
     public void onShutdown() {
-        List<Player> players = new ArrayList<>(lastLocation.keySet());
-    
-        for (Player player : players) {
-            checkRollBack(player);
-        }
+        HashMap<UUID, Location> lastLocMap = new HashMap<>(this.lastLocation);
+        HashMap<UUID, ItemStack[]> lastInvMap = new HashMap<>(this.lastInventory);
+
+        lastLocMap.forEach((player, location) -> {
+            Player p = Bukkit.getPlayer(player);
+            if (p != null) {
+                teleportBack(p);
+            } else {
+                plugin.getDuelLogger().log("Player " + player + " is offline, can't teleport back to spawn.");
+            }
+        });
+        lastInvMap.forEach((player, inventory) -> {
+            Player p = Bukkit.getPlayer(player);
+            if (p != null) {
+                giveInventoryBack(p);
+            } else {
+                plugin.getDuelLogger().log("Player " + player + " is offline, can't restore inventory.");
+                plugin.getDuelLogger().log("Inventory: " + inventory.toString());
+            }
+        });
         
     }
-    public void checkRollBack(Player p) {
-        try {
-            if (lastLocation.containsKey(p)) {
-                p.teleport(lastLocation.get(p));
-                p.getInventory().setContents(lastInventory.get(p));
-                lastLocation.remove(p);
-                lastInventory.remove(p);
-                plugin.getDuelLogger().log("Player " + p.getName() + " teleported back to spawn and inventory restored.");
+    public void teleportBack(Player p) {
+        UUID uuid = p.getUniqueId();
+        if (lastLocation.containsKey(uuid)) {
+            try {
+                boolean tp = p.teleport(lastLocation.get(uuid));
+                if (!tp) {
+                    plugin.getDuelLogger().log("Error while teleporting player back.");
+                } else {
+                    plugin.getDuelLogger().log("Player " + p.getName() + " teleported back to spawn.");
+                }
+                lastLocation.remove(uuid);
+            } catch (Exception e) {
+                plugin.getDuelLogger().log("Error while teleporting player " + p.getName() + " back to spawn." + e.getMessage());
+                e.printStackTrace();
             }
-        } catch (IllegalArgumentException e) {
-            plugin.getDuelLogger().log("Error while teleporting player " + p.getName() + " back to spawn, inventory contents: " + lastInventory.get(p).toString());
-            e.printStackTrace();
+        }
+    }
+    public void giveInventoryBack(Player p) {
+        UUID uuid = p.getUniqueId();
+        if (lastInventory.containsKey(uuid)) {
+            try {
+
+                ItemStack[] items = plugin.getDuelmanager().getLastInventory().get(uuid);
+                if (items != null) {
+                    p.getInventory().setContents(lastInventory.get(uuid));
+                    plugin.getDuelLogger().log("Player " + p.getName() + " inventory restored.");
+    
+                }
+                lastInventory.remove(uuid);
+            } catch (Exception e) {
+                plugin.getDuelLogger().log("Error while restoring player " + p.getName() + " inventory." + e.getMessage());
+                e.printStackTrace();
+            }
         }
     }
 
-    private HashMap<Player, Player> requests = new HashMap<>();
+    public void checkRollBack(Player p) {
+        p.setGameMode(GameMode.SURVIVAL);
+        p.setHealth(p.getAttribute(Attribute.MAX_HEALTH).getBaseValue());
+        p.setFoodLevel(20);
+        p.getActivePotionEffects().clear();
+        p.setAbsorptionAmount(0);
+        p.setFireTicks(0);
+        p.setFallDistance(0);
+        p.setSaturation(20);    
+
+        teleportBack(p);
+        giveInventoryBack(p);
+    }
 
     //#region request
     public void requestDuel(Player p, Player target) {
@@ -213,7 +174,9 @@ public class DuelManager {
         }
         if (requests.containsKey(target) && requests.get(target) == p) {
             Team team1 = new Team(p);
+            team1.setPrefix("§bTeam 1");
             Team team2 = new Team(target);
+            team2.setPrefix("§cTeam 2");
             createDuel(team1, team2);
             requests.remove(p);
             requests.remove(target);
@@ -249,7 +212,7 @@ public class DuelManager {
         target.spigot().sendMessage(message);
 
     }
-
+    //#region stats
     public void modifyStats(Team winner, Team losser) {
         int minSize = Math.min(winner.getDuelPlayers().size(), losser.getDuelPlayers().size());
     
@@ -310,5 +273,39 @@ public class DuelManager {
         if (loserOnline != null) {
             loserOnline.sendMessage(lang.getFrom("duel.lose", winnerOnline).replace("{elo}", newLoserElo + ""));
         }
+    }
+    //#region getters
+    public HashMap<UUID, ItemStack[]> getLastInventory() {
+        return lastInventory;
+    }
+
+    public HashMap<UUID, Location> getLastLocation() {
+        return lastLocation;
+    }
+
+    public List<Duel> getDuels() {
+        return duels;
+    }
+    public List<Team> getTeams() {
+        return teams;
+    }
+    public boolean isInDuel(Player player) {
+        return getDuel(player) != null;
+    }
+    public Duel getDuel(Player player) {
+        for (Duel duel : duels) {
+            if (duel.getTeam1().getDuelPlayers().contains(player) || duel.getTeam2().getDuelPlayers().contains(player)) {
+                return duel;
+            }
+        }
+        return null;
+    }
+    public Team isInTeam(Player player) {
+        for (Team team : teams) {
+            if (team.getDuelPlayers().contains(player)) {
+                return team;
+            }
+        }
+        return null;
     }
 }

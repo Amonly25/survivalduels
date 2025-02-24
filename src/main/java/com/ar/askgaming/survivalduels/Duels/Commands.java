@@ -9,15 +9,17 @@ import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
 
 import com.ar.askgaming.survivalduels.SurvivalDuels;
-import com.ar.askgaming.survivalduels.Duels.Queue.QueueType;
+import com.ar.askgaming.survivalduels.Duels.QueueManager.QueueType;
 import com.ar.askgaming.survivalduels.Utils.Language;
 
 public class Commands implements TabExecutor {
 
     private SurvivalDuels plugin;
     private Language lang;
-    public Commands(SurvivalDuels plugin) {
+    private DuelManager duelManager;
+    public Commands(SurvivalDuels plugin, DuelManager duelManager) {
         this.plugin = plugin;
+        this.duelManager = duelManager;
         this.lang = plugin.getLangManager();
         plugin.getServer().getPluginCommand("duels").setExecutor(this);
     }
@@ -63,13 +65,14 @@ public class Commands implements TabExecutor {
 
         return true;
     }
+    //#region queue
     public void queue(Player p, String[] args){
         if (args.length == 1) {
             p.sendMessage("Usage: /duel queue <type>");
             return;
         }
         if (args[1].equalsIgnoreCase("leave")) {
-            plugin.getDuelmanager().leaveQueue(p);
+            plugin.getQueueManager().leaveQueue(p);
             p.sendMessage(lang.getFrom("queue.leave", p));
             return;
         }
@@ -85,18 +88,10 @@ public class Commands implements TabExecutor {
             return;
         }
 
-        for (Queue queue : plugin.getDuelmanager().getQueues()) {
-            if (queue.getType() == type) {
-                for (Player player : Bukkit.getOnlinePlayers()) {
-                    if (player.hasPermission("survivalduels.use")) {
-                        player.sendMessage(lang.getFrom("queue.enter", p).replace("{queue}", queue.getType().toString()).replace("{player}", p.getName()));
-                    }
-                }
-                queue.addPlayer(p);
-                return;
-            }
-        }
+        plugin.getQueueManager().addPlayerToQueue(p, type);
+
     }
+    //#region duelPlayer
     private void duelPlayer(Player p, String[] args) {
         if (!canQueueOrDuel(p)) {
             return;
@@ -110,37 +105,39 @@ public class Commands implements TabExecutor {
             p.sendMessage(lang.getFrom("commands.cant_duel_yourself", p));
             return;
         }
-        if (plugin.getDuelmanager().isInDuel(target) != null) {
+        if (duelManager.getDuel(p) != null) {
             p.sendMessage(lang.getFrom("duel.player_in_duel", p));
             return;
         }
-        if (plugin.getDuelmanager().isInQueue(target) != null) {
+        if (plugin.getQueueManager().isInQueue(target) != null) {
             p.sendMessage(lang.getFrom("queue.in_queue", p));
             return;
         }
 
-        plugin.getDuelmanager().requestDuel(p, target);
+        duelManager.requestDuel(p, target);
 
     }
+    //#region canQueueOrDuel
     private boolean canQueueOrDuel(Player p) {
         
-        if (plugin.getDuelmanager().isInDuel(p) != null) {
+        if (duelManager.getDuel(p) != null) {
             p.sendMessage(lang.getFrom("duel.in_duel", p));
             return false;
         }
-        if (plugin.getDuelmanager().isInQueue(p) != null) {
+        if (plugin.getQueueManager().isInQueue(p) != null) {
             p.sendMessage(lang.getFrom("queue.already_in", p));
             return false;
         }
         return true;
     }
-    //#region endDuel
+    //#region leave
     public void leaveDuel(Player p, String[] args){
-        Duel duel = plugin.getDuelmanager().isInDuel(p);
-        if (duel == null) {
+        Duel duel = duelManager.getDuel(p);
+        if (duelManager == null) {
             p.sendMessage(lang.getFrom("duel.not_in_duel", p));
             return;
         }
-        duel.checkOnPlayerDeath(p);
+        plugin.getDuelLogger().log("Player " + p.getName() + " leave the duel.");
+        duel.eliminatePlayer(p);
     }
 }

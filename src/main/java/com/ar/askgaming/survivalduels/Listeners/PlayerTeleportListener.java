@@ -9,7 +9,7 @@ import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 
 import com.ar.askgaming.survivalduels.SurvivalDuels;
 import com.ar.askgaming.survivalduels.Duels.Duel;
-import com.ar.askgaming.survivalduels.Duels.Duel.DuelState;
+import com.ar.askgaming.survivalduels.Duels.DuelManager.DuelState;
 
 public class PlayerTeleportListener implements Listener{
 
@@ -23,7 +23,7 @@ public class PlayerTeleportListener implements Listener{
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onTeleport(PlayerTeleportEvent event) {
         Player p = event.getPlayer();
-        Duel duel = plugin.getDuelmanager().isInDuel(p);
+        Duel duel = plugin.getDuelmanager().getDuel(p);
         if (duel == null) return;
 
         if (event.getCause() == TeleportCause.ENDER_PEARL) {

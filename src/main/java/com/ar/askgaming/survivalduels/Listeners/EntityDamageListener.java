@@ -1,6 +1,6 @@
 package com.ar.askgaming.survivalduels.Listeners;
 
-import org.bukkit.GameMode;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventHandler;
@@ -21,63 +21,75 @@ public class EntityDamageListener implements Listener {
 
     @EventHandler
     public void onEntityDamageByEntity(EntityDamageByEntityEvent event) {
-        
-        if (event.getEntity() instanceof Player) {
-            handlePlayerDamage(event);
+        if (!(event.getEntity() instanceof Player)) {
+            return;
         }
-    }
-    private void handlePlayerDamage(EntityDamageByEntityEvent event) {
+
         Player damaged = (Player) event.getEntity();
-        Player damager = null;
-    
-        if (event.getDamager() instanceof Player) {
-            damager = (Player) event.getDamager();
-        } else if (event.getDamager() instanceof Projectile) {
-            Projectile projectile = (Projectile) event.getDamager();
-            if (projectile.getShooter() instanceof Player) {
-                damager = (Player) projectile.getShooter();
-            }
-        }
-    
-        if (damager != null) {
+        Player damager = getDamager(event.getDamager());
 
-            Duel duel = plugin.getDuelmanager().getDuel(damaged);
-            if (duel == null) {
-                return;
-            }
-            Duel duelDamager = plugin.getDuelmanager().getDuel(damager);
-            if (duelDamager == null) {
-                return;
-            }
-            if (!duel.equals(duelDamager)) {
-                event.setCancelled(true);
-                return;
-            }
-            
-            Team teamDamaged = plugin.getDuelmanager().isInTeam(damaged);
-            Team TeamDamager = plugin.getDuelmanager().isInTeam(damager);
-
-            if (teamDamaged != null && TeamDamager != null && teamDamaged.equals(TeamDamager)) {
-                event.setCancelled(true);
-                return;
-            }
-            
-            if (damaged.getHealth() - event.getFinalDamage() <= 0) {
-                duel.checkOnPlayerDeath(damaged);
-                event.setCancelled(true);
-            }
+        if (damager == null) {
+            return;
         }
+
+        Duel duel = plugin.getDuelmanager().getDuel(damaged);
+        Duel duelDamager = plugin.getDuelmanager().getDuel(damager);
+
+        if (duel == null || duelDamager == null) {
+            return;
+        }
+
+        Team teamDamaged = plugin.getDuelmanager().isInTeam(damaged);
+        Team teamDamager = plugin.getDuelmanager().isInTeam(damager);
+
+        if (teamDamaged != null && teamDamager != null && teamDamaged.equals(teamDamager)) {
+            event.setCancelled(true);
+            return;
+        }
+
+        handlePossibleDeath(damaged, event);
     }
+
     @EventHandler
     public void onEntityDamage(EntityDamageEvent event) {
-        if (event.getEntity() instanceof Player) {
-            Player damaged = (Player) event.getEntity();
-            Duel duel = plugin.getDuelmanager().getDuel(damaged);
-            if (duel == null) {
-                return;
+        if (!(event.getEntity() instanceof Player)) {
+            return;
+        }
+
+        Player damaged = (Player) event.getEntity();
+        Duel duel = plugin.getDuelmanager().getDuel(damaged);
+        
+        if (duel == null) {
+            return;
+        }
+
+        if (event.getCause() == EntityDamageEvent.DamageCause.FALL) {
+            event.setCancelled(true);
+            return;
+        }
+
+        handlePossibleDeath(damaged, event);
+    }
+
+    private Player getDamager(Entity damagerEntity) {
+        if (damagerEntity instanceof Player) {
+            return (Player) damagerEntity;
+        }
+
+        if (damagerEntity instanceof Projectile) {
+            Projectile projectile = (Projectile) damagerEntity;
+            if (projectile.getShooter() instanceof Player) {
+                return (Player) projectile.getShooter();
             }
-            if (damaged.getHealth() - event.getFinalDamage() <= 0) {
-                duel.checkOnPlayerDeath(damaged);
+        }
+        return null;
+    }
+
+    private void handlePossibleDeath(Player damaged, EntityDamageEvent event) {
+        if (damaged.getHealth() - event.getFinalDamage() <= 0) {
+            Duel duel = plugin.getDuelmanager().getDuel(damaged);
+            if (duel != null) {
+                duel.eliminatePlayer(damaged);
                 event.setCancelled(true);
             }
         }

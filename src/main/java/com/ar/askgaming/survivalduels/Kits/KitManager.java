@@ -11,6 +11,7 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.checkerframework.checker.units.qual.g;
 
 import com.ar.askgaming.survivalduels.SurvivalDuels;
 
@@ -97,5 +98,13 @@ public class KitManager {
         config.set(kit.getName(), kit);
         save();
     }
-
+    public void giveKit(Player p, Kit kit) {
+        p.getInventory().setContents(kit.getItems());
+        p.getInventory().setArmorContents(kit.getArmor());
+    }
+    public void giveKit(List<Player> players, Kit kit) {
+        for (Player p : players) {
+            giveKit(p, kit);
+        }
+    }
 }

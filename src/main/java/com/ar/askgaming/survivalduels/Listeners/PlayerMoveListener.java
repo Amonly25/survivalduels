@@ -5,10 +5,10 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
-import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 
 import com.ar.askgaming.survivalduels.SurvivalDuels;
 import com.ar.askgaming.survivalduels.Duels.Duel;
+import com.ar.askgaming.survivalduels.Duels.DuelManager.DuelState;
 
 public class PlayerMoveListener implements Listener{
 
@@ -32,12 +32,12 @@ public class PlayerMoveListener implements Listener{
         if (duel == null) {
             return;
         }
-        if (duel.getState() == Duel.DuelState.COUNTDOWN) {
+        if (duel.getState() == DuelState.COUNTDOWN) {
             event.setCancelled(true);
         }
         if (event.getTo().getY() < 0){
             p.teleport(duel.getArena().getSpawnsTeam1());
-            duel.checkOnPlayerDeath(p);
+            duel.eliminatePlayer(p);
 
         }
     }

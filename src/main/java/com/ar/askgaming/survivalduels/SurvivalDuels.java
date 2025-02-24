@@ -6,6 +6,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import com.ar.askgaming.survivalduels.Arenas.Arena;
 import com.ar.askgaming.survivalduels.Arenas.ArenaManager;
 import com.ar.askgaming.survivalduels.Duels.DuelManager;
+import com.ar.askgaming.survivalduels.Duels.QueueManager;
 import com.ar.askgaming.survivalduels.Kits.Kit;
 import com.ar.askgaming.survivalduels.Kits.KitManager;
 import com.ar.askgaming.survivalduels.Listeners.EntityDamageListener;
@@ -27,6 +28,7 @@ public class SurvivalDuels extends JavaPlugin {
     private DuelManager duelmanager;
     private ArenaManager arenamanager;
     private KitManager kitmanager;
+    private QueueManager queueManager;
     private DuelLogger logger;
     private Language langManager;
     private PlayerData playerData;
@@ -43,6 +45,7 @@ public class SurvivalDuels extends JavaPlugin {
         duelmanager = new DuelManager(this);
         arenamanager = new ArenaManager(this);
         kitmanager = new KitManager(this);
+        queueManager = new QueueManager(this);
         logger = new DuelLogger(this);
                 
         getServer().getPluginManager().registerEvents(new EntityDamageListener(this), this);
@@ -81,6 +84,9 @@ public class SurvivalDuels extends JavaPlugin {
     }
     public KitManager getKitmanager() {
         return kitmanager;
+    }
+    public QueueManager getQueueManager() {
+        return queueManager;
     }
     
     

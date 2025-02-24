@@ -8,7 +8,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.World;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
@@ -17,6 +16,8 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 import com.ar.askgaming.survivalduels.SurvivalDuels;
 import com.ar.askgaming.survivalduels.Arenas.Arena;
+import com.ar.askgaming.survivalduels.Duels.DuelManager.DuelState;
+import com.ar.askgaming.survivalduels.Duels.DuelManager.MessageType;
 import com.ar.askgaming.survivalduels.Kits.Kit;
 
 import net.md_5.bungee.api.ChatColor;
@@ -28,38 +29,17 @@ public class Duel {
     private final Team team1;
     private final Team team2;
     private final Arena arena;
-    private Team winner;
-    private Team loser;
-    public enum DuelState {
-        COUNTDOWN,
-        INGAME,
-        END
-    }
-    private enum MessageType {
-        START,
-        END,
-        PREPARE,
-        ERROR_TP
-    }
-
-    private List<Player> spectators = new ArrayList<>();
-    public List<Player> getSpectators() {
-        return spectators;
-    }
-
-    private String kit;	
-    private String arenaName;
-    private int countdown = 10;
+    private final String kit;	
+    private final String arenaName;
+    private final int countdown = 10;
     private DuelState state;
-
     private boolean useOwnInventory = false;
     private boolean keepInventory = false;
 
     private HashMap<Location, Material> blocks = new HashMap<>();
+    private List<Player> spectators = new ArrayList<>();
 
-    public HashMap<Location, Material> getBlocks() {
-        return blocks;
-    }
+    //#region Constructor
     public Duel(Team team1, Team team2, Arena arena, Kit kit) {
 
         useOwnInventory = plugin.getConfig().getBoolean("duels.useOwnInventory.enabled",false);
@@ -79,19 +59,13 @@ public class Duel {
                 rollBackPlayers();
                 return;
         }
-        for (Player pl : Bukkit.getOnlinePlayers()){
-            if (pl.hasPermission("survivalduels.use")) {
-                pl.sendMessage(plugin.getLangManager().getFrom("duel.created", pl).replace("{team1}",
-                 team1.getName()).replace("{team2}", team2.getName()));
-            }
-        };
 
         sendMessageToTeams(MessageType.PREPARE);
        
         plugin.getDuelLogger().log("Duel between " + team1.getName() + " and " + team2.getName() + " started. Arena: " + arenaName + ", Kit: " + kit.getName());
 
-        setKit(team1.getDuelPlayers(), kit);
-        setKit(team2.getDuelPlayers(), kit);
+        plugin.getKitmanager().giveKit(team1.getDuelPlayers(), kit);
+        plugin.getKitmanager().giveKit(team2.getDuelPlayers(), kit);
 
         Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
             @Override
@@ -101,6 +75,7 @@ public class Duel {
             }
         }, countdown * 20);
     }
+    //#region teleportTeams
     private boolean teleportTeams(List<Player> list, Location location) {
         int size = list.size();
         int counter = 0;
@@ -119,6 +94,7 @@ public class Duel {
         sendMessageToPlayers(team1.getDuelPlayers(), type);
         sendMessageToPlayers(team2.getDuelPlayers(), type);
     }
+    //#region sendMessage
     private void sendMessageToPlayers(List<Player> list, MessageType type) {
         for (Player player : list) {
             switch (type) {
@@ -156,39 +132,11 @@ public class Duel {
             }
         }
     }
-    private void setKit(List<Player> list, Kit kit) {
-        if (useOwnInventory) {
-            return;
-        }
-
-        if (kit == null) {
-            return;
-        }
-        for (Player player : list) {
-            player.getInventory().setContents(kit.getItems());
-            player.getInventory().setArmorContents(kit.getArmor());
-        }
-    }
-
-    public Team getTeam1() {
-        return team1;
-    }
-    public Team getTeam2() {
-        return team2;
-    }
-
-    public DuelState getState() {
-        return state;
-    }
-    public void setState(DuelState state) {
-        this.state = state;
-    }
-    public Arena getArena() {
-        return arena;
-    }
-    public void checkOnPlayerDeath(Player player) {
+    //#region eliminatePlayer
+    public void eliminatePlayer(Player player) {
         player.setGameMode(GameMode.SPECTATOR);
         spectators.add(player);
+        player.getInventory().clear();
 
         team1.getAlivePlayers().remove(player);
         team2.getAlivePlayers().remove(player);
@@ -199,17 +147,24 @@ public class Duel {
             endDuel(team1, team2);
         }
     }
+    //#region endDuel
     public void endDuel(Team winner, Team losser) {
-        this.winner = winner;
-        this.loser = losser;
 
         state = DuelState.END;
         arena.setInUse(false);
         plugin.getDuelmanager().getTeams().remove(winner);
+        plugin.getDuelmanager().getTeams().remove(losser);
     
         List<Player> allPlayers = new ArrayList<>(winner.getDuelPlayers());
+        allPlayers.forEach(p -> p.getInventory().clear());
+        
         allPlayers.addAll(spectators);
-        resetPlayers(allPlayers);
+        for (Player pl : allPlayers) {
+            if (useOwnInventory && !keepInventory) {
+                plugin.getDuelmanager().getLastInventory().put(pl.getUniqueId(), new ItemStack[36]);
+            }
+            plugin.getDuelmanager().checkRollBack(pl);
+        }
 
         for (Player pl : Bukkit.getOnlinePlayers()){
             if (pl.hasPermission("survivalduels.use")) {
@@ -224,66 +179,36 @@ public class Duel {
         }
         plugin.getDuelmanager().getDuels().remove(this);
     }
-    
-    private void teleportBack(Player player) {
-        World world = Bukkit.getWorld("world");
-        Location location = world.getSpawnLocation();
-
-        try {
-            boolean tp = player.teleport(plugin.getDuelmanager().getLastLocation().getOrDefault(player, location), TeleportCause.PLUGIN);
-            if (!tp) {
-                plugin.getDuelLogger().log("Error while teleporting player back.");
-            }
-            if (useOwnInventory && !keepInventory) {
-                for (Player p : loser.getDuelPlayers()) {
-                    plugin.getDuelmanager().getLastInventory().put(p, new ItemStack[36]);
-
-                }
-            }
-            ItemStack[] items = plugin.getDuelmanager().getLastInventory().get(player);
-            if (items != null) {
-                player.getInventory().setContents(plugin.getDuelmanager().getLastInventory().get(player));
-                plugin.getDuelLogger().log("Player " + player.getName() + " Inventory restored.");
-
-            }
-
-            plugin.getDuelLogger().log("Player " + player.getName() + " teleported back to spawn.");
-            plugin.getDuelmanager().getLastLocation().remove(player);
-            plugin.getDuelmanager().getLastInventory().remove(player);
-        } catch (IllegalArgumentException e) {
-            plugin.getDuelLogger().log("Error while teleporting/restoring player back. " + e.getMessage());
-            e.printStackTrace();
+    private void rollBackPlayers() {
+        for (Player player : team1.getDuelPlayers()) {
+            plugin.getDuelmanager().checkRollBack(player);
+        }
+        for (Player player : team2.getDuelPlayers()) {
+            plugin.getDuelmanager().checkRollBack(player);
         }
     }
-    
-    private void resetPlayers(List<Player> players) {
-        players.forEach(player -> {
-            try {
-                player.setGameMode(GameMode.SURVIVAL);
-                player.getActivePotionEffects().clear();
-                player.setAbsorptionAmount(0);
-                player.setHealth(player.getAttribute(Attribute.MAX_HEALTH).getBaseValue());
-                player.setFireTicks(0);
-                teleportBack(player);
-            } catch (Exception e) {
-                plugin.getDuelLogger().log("Failed to rollback player " + player.getName() + ": " + e.getMessage());
-                e.printStackTrace();
-            }
-        });
+                
+    //#region getters
+    public List<Player> getSpectators() {
+        return spectators;
     }
-    
-    public void checkOnPlayerQuit(Player p) {
-        plugin.getDuelLogger().log(p.getName() + " quit the duel.");
-        checkOnPlayerDeath(p);
+    public HashMap<Location, Material> getBlocks() {
+        return blocks;
     }
-    
-    public void rollBackPlayers() {
-        List<Player> allPlayers = new ArrayList<>();
-        allPlayers.addAll(team1.getDuelPlayers());
-        allPlayers.addAll(team2.getDuelPlayers());
-        allPlayers.addAll(spectators);
-    
-        resetPlayers(allPlayers);
+    public Team getTeam1() {
+        return team1;
+    }
+    public Team getTeam2() {
+        return team2;
+    }
+    public DuelState getState() {
+        return state;
+    }
+    public void setState(DuelState state) {
+        this.state = state;
+    }
+    public Arena getArena() {
+        return arena;
     }
   
 }

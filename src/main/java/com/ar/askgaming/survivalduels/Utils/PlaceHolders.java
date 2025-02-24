@@ -4,6 +4,7 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.file.FileConfiguration;
 
 import com.ar.askgaming.survivalduels.SurvivalDuels;
+import com.ar.askgaming.survivalduels.Duels.Team;
 
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 
@@ -26,6 +27,13 @@ public class PlaceHolders extends PlaceholderExpansion{
                 return String.valueOf(config.getInt(uuid + ".losses",0));       
             case "elo":
                 return String.valueOf(config.getInt(uuid + ".elo",1000));
+            case "team":
+                Team team = plugin.getDuelmanager().isInTeam(player.getPlayer());
+                if (team != null) {
+                    String prefix = team.getPrefix();
+                    return prefix;
+                }
+                return "";
             default:
                 return "Invalid Placeholder";
         }

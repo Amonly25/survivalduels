@@ -6,18 +6,17 @@ import java.util.List;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 
+import com.ar.askgaming.survivalduels.SurvivalDuels;
+
 public class Team {
+
+    private SurvivalDuels plugin = SurvivalDuels.getPlugin(SurvivalDuels.class);
 
     private List<Player> duelPlayers = new ArrayList<>();
     private List<Player> alivePlayers = new ArrayList<>();
+    private String name;
+    private String prefix;
 
-
-    public List<Player> getDuelPlayers() {
-        return duelPlayers;
-    }
-    public List<Player> getAlivePlayers() {
-        return alivePlayers;
-    }
     public Team(Player player) {
         duelPlayers.add(player);
         alivePlayers.add(player);
@@ -25,17 +24,28 @@ public class Team {
         setName();
     }
     public Team(List<Player> players) {
+
         duelPlayers.addAll(players);
         alivePlayers.addAll(players);
 
         setName();
     }
-    private String name = "";
 
+    public List<Player> getDuelPlayers() {
+        return duelPlayers;
+    }
+    public List<Player> getAlivePlayers() {
+        return alivePlayers;
+    }
+    public String getPrefix() {
+        return prefix;
+    }
+    public void setPrefix(String prefix) {
+        this.prefix = prefix;
+    }
     public String getName() {
         return name;
     }
-
 
     private void setName() {
         String split = "";

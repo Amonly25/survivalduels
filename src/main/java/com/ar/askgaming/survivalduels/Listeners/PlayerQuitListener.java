@@ -7,7 +7,6 @@ import org.bukkit.event.player.PlayerQuitEvent;
 
 import com.ar.askgaming.survivalduels.SurvivalDuels;
 import com.ar.askgaming.survivalduels.Duels.Duel;
-import com.ar.askgaming.survivalduels.Duels.DuelManager;
 import com.ar.askgaming.survivalduels.Duels.Queue;
 
 public class PlayerQuitListener implements Listener{
@@ -20,19 +19,19 @@ public class PlayerQuitListener implements Listener{
     public void onPlayerQuit(PlayerQuitEvent event) {
         
         Player p = event.getPlayer();
-        DuelManager dm = plugin.getDuelmanager();
                    
-        Queue queue = dm.isInQueue(p);
+        Queue queue = plugin.getQueueManager().isInQueue(p);
         if (queue != null) {
             queue.removePlayer(p);
             return;
         }
 
-        Duel duel = dm.getDuel(p);
+        Duel duel = plugin.getDuelmanager().getDuel(p);
         if (duel == null) {
             return;
         }
-        duel.checkOnPlayerQuit(p);
+        plugin.getDuelLogger().log("Player " + p.getName() + " has left the game while in a duel.");
+        duel.eliminatePlayer(p);
         
     }
 }
