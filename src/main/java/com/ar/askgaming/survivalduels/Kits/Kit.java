@@ -18,6 +18,7 @@ public class Kit implements ConfigurationSerializable {
         this.name = name;
     }
 
+    @SuppressWarnings("unchecked")
     public Kit(Map<String, Object> map) {
         this.name = (String) map.getOrDefault("name", "default");
         

@@ -6,11 +6,7 @@ import java.util.List;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 
-import com.ar.askgaming.survivalduels.SurvivalDuels;
-
 public class Team {
-
-    private SurvivalDuels plugin = SurvivalDuels.getPlugin(SurvivalDuels.class);
 
     private List<Player> duelPlayers = new ArrayList<>();
     private List<Player> alivePlayers = new ArrayList<>();
