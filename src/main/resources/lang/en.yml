@@ -25,6 +25,7 @@ duel:
 commands:
   player_not_found: "&cPlayer not found!"
   cant_duel_yourself: "&cYou can't duel yourself!"
+  leaderboard_updated: "&aLeaderboard updated!"
 
 arena:
   not_found: "&cNo arena found, cancelling duel!"

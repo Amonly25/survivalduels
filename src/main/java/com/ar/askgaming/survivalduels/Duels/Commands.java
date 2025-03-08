@@ -1,5 +1,6 @@
 package com.ar.askgaming.survivalduels.Duels;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.bukkit.Bukkit;
@@ -28,11 +29,19 @@ public class Commands implements TabExecutor {
     public List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
 
         if (args.length == 1) {
-            return List.of("queue", "leave");
+            List<String> completions = new ArrayList<>();
+            completions.add("queue");
+            completions.add("leave");
+            if (sender.hasPermission("duels.admin")) {
+                completions.add("set_leaderboard");
+            }
+            return completions;
+
         }
         if (args.length == 2) {
             return List.of("solo", "duo", "trio", "squad","leave");
         }
+
        
         return null;
     }
@@ -58,12 +67,23 @@ public class Commands implements TabExecutor {
             case "leave":
                 leaveDuel(p,args);
                 break;
+            case "set_leaderboard":
+                setLeaderBoard(p);
+                break;
             default:
                 duelPlayer(p, args);
                 break;
         }
 
         return true;
+    }
+    private void setLeaderBoard(Player p) {
+        if (!p.hasPermission("duels.admin")) {
+            p.sendMessage(lang.getFrom("commands.no_permission", p));
+        }
+
+        plugin.getLeaderBoard().createOrUpdateLeaderBoard(p.getLocation());
+        p.sendMessage(lang.getFrom("commands.leaderboard_updated", p));
     }
     //#region queue
     public void queue(Player p, String[] args){

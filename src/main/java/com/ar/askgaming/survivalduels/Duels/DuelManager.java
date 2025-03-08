@@ -229,6 +229,7 @@ public class DuelManager {
     
         // Guardar solo una vez al final
         plugin.getPlayerData().save();
+        plugin.getLeaderBoard().updateText();
     }
     
     private void addWin(OfflinePlayer player) {

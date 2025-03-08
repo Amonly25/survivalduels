@@ -25,6 +25,7 @@ duel:
 commands:
   player_not_found: "&c¡Jugador no encontrado!"
   cant_duel_yourself: "&c¡No puedes retarte a un duelo a ti mismo!"
+  leaderboard_updated: "&a¡Clasificación actualizada!"
 
 arena:
   not_found: "&c¡No se encontró una arena, cancelando el duelo!"

@@ -4,3 +4,10 @@ duels:
   useOwnInventory:
     enabled: false
     keepInventory: false #only works if useOwnInventory is enabled
+
+leaderboard:
+  format: "&f%position%. &7%player% &8>> &6%elo% &7elo"
+  title: "&6&lDuels Top 10"
+  positions: 10
+  # Dont touch this use /duels set_leaderboard to create and move the hologram
+  location:

@@ -2,8 +2,12 @@ package com.ar.askgaming.survivalduels.Utils;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.UUID;
 import java.util.logging.Level;
 
+import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -51,5 +55,18 @@ public class PlayerData {
     public void set(String path, Object value) {
         config.set(path, value);
         save(); // Guarda automáticamente los cambios
+    }
+    public HashMap<String, Integer> getPlayersElo() {
+        // Get the leader board
+        HashMap<String, Integer> leaderBoard = new HashMap<>();
+
+        for (String key : config.getKeys(false)) {
+            UUID uuid = UUID.fromString(key);
+            OfflinePlayer player = Bukkit.getOfflinePlayer(uuid);
+            int elo = config.getInt(key+".elo");
+            leaderBoard.put(player.getName(), elo);
+        }
+
+        return leaderBoard;
     }
 }

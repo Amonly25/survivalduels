@@ -2,6 +2,7 @@ package com.ar.askgaming.survivalduels;
 
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.checkerframework.common.aliasing.qual.LeakedToResult;
 
 import com.ar.askgaming.survivalduels.Arenas.Arena;
 import com.ar.askgaming.survivalduels.Arenas.ArenaManager;
@@ -20,6 +21,7 @@ import com.ar.askgaming.survivalduels.Listeners.PlayerQuitListener;
 import com.ar.askgaming.survivalduels.Listeners.PlayerTeleportListener;
 import com.ar.askgaming.survivalduels.Utils.DuelLogger;
 import com.ar.askgaming.survivalduels.Utils.Language;
+import com.ar.askgaming.survivalduels.Utils.LeaderBoard;
 import com.ar.askgaming.survivalduels.Utils.PlaceHolders;
 import com.ar.askgaming.survivalduels.Utils.PlayerData;
 
@@ -32,6 +34,7 @@ public class SurvivalDuels extends JavaPlugin {
     private DuelLogger logger;
     private Language langManager;
     private PlayerData playerData;
+    private LeaderBoard leaderBoard;
 
     public void onEnable() {
         
@@ -47,6 +50,7 @@ public class SurvivalDuels extends JavaPlugin {
         kitmanager = new KitManager(this);
         queueManager = new QueueManager(this);
         logger = new DuelLogger(this);
+        leaderBoard = new LeaderBoard(this);
                 
         getServer().getPluginManager().registerEvents(new EntityDamageListener(this), this);
         getServer().getPluginManager().registerEvents(new PlayerQuitListener(this), this);
@@ -63,9 +67,12 @@ public class SurvivalDuels extends JavaPlugin {
             new PlaceHolders(this).register();
         }
     }
-
+    public LeaderBoard getLeaderBoard() {
+        return leaderBoard;
+    }
     public void onDisable() {
         getDuelmanager().onShutdown();
+        getLeaderBoard().removeLeaderBoard();
     }
     public PlayerData getPlayerData() {
         return playerData;
