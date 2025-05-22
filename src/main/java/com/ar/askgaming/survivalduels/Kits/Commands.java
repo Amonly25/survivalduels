@@ -46,6 +46,7 @@ public class Commands implements TabExecutor{
 
         if (args.length == 0){
             sender.sendMessage("Use kit <create/delete/list/set>");
+            return true;
         }
 
         switch (args[0].toLowerCase()) {
